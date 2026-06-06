@@ -1,0 +1,4015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0f172a" />
+<meta name="description" content="Kampala School & Academy Management Portal — offline-first, role-based school management system" />
+<link rel="manifest" href="manifest.json" />
+<title>KSA Portal — Kampala School & Academy</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand-900: #0f172a;
+    --brand-800: #1e293b;
+    --brand-700: #334155;
+    --accent: #10b981;
+    --accent-dark: #059669;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --surface: #f8fafc;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --text-primary: #0f172a;
+    --text-muted: #64748b;
+    --role-color: #10b981;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--surface);
+    color: var(--text-primary);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  code, .mono { font-family: 'DM Mono', monospace; }
+
+  /* ── Auth Screen ───────────────────────────────────────── */
+  #authScreen {
+    min-height: 100vh;
+    background: var(--brand-900);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  #authScreen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 20% 30%, rgba(16,185,129,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 60% at 80% 70%, rgba(99,102,241,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  #authScreen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+  .auth-card {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 420px;
+    margin: 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 40px 36px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05) inset;
+  }
+  .auth-logo {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, var(--accent) 0%, #6366f1 100%);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500; font-size: 18px; color: #fff;
+    box-shadow: 0 8px 20px rgba(16,185,129,0.3);
+    margin-bottom: 24px;
+  }
+  .auth-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900; font-size: 26px; color: #fff;
+    line-height: 1.1; margin-bottom: 4px;
+  }
+  .auth-sub { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 32px; }
+  .auth-label {
+    display: block; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: rgba(255,255,255,0.5); margin-bottom: 6px;
+  }
+  .auth-input {
+    width: 100%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; color: #fff;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .auth-input::placeholder { color: rgba(255,255,255,0.25); }
+  .auth-input:focus {
+    border-color: var(--accent);
+    background: rgba(255,255,255,0.09);
+  }
+  .auth-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #fff; border: none;
+    border-radius: 10px;
+    padding: 13px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 8px;
+  }
+  .auth-btn:hover { background: var(--accent-dark); }
+  .auth-btn:active { transform: scale(0.99); }
+  .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .auth-error {
+    background: rgba(239,68,68,0.15);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px; color: #fca5a5;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .role-pills {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-top: 24px;
+  }
+  .role-pill {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.45);
+    background: rgba(255,255,255,0.04);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .role-pill:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Change Password Modal ─────────────────────────────── */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+  }
+  .modal-overlay.hidden { display: none; }
+  .modal-box {
+    background: #fff; border-radius: 16px;
+    padding: 28px; width: 100%; max-width: 480px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700; font-size: 20px; color: var(--brand-900);
+    margin-bottom: 4px;
+  }
+  .modal-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+
+  /* ── App Shell ─────────────────────────────────────────── */
+  #appShell { display: none; }
+  #appShell.visible { display: block; }
+
+  /* ── Header ────────────────────────────────────────────── */
+  .app-header {
+    background: var(--brand-900);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-inner {
+    max-width: 1400px; margin: 0 auto;
+    padding: 0 20px;
+    height: 60px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .header-logo {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent) 0%, #6366f1 100%);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500; font-size: 12px; color: #fff;
+    flex-shrink: 0;
+  }
+  .header-title {
+    font-size: 15px; font-weight: 600; color: #fff;
+    flex: 1; line-height: 1.2;
+  }
+  .header-subtitle { font-size: 11px; color: rgba(255,255,255,0.35); }
+  .role-badge {
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: rgba(255,255,255,0.08);
+    color: var(--role-color);
+    border: 1px solid var(--role-color);
+    flex-shrink: 0;
+  }
+  .header-user {
+    font-size: 12px; color: rgba(255,255,255,0.5);
+    flex-shrink: 0; text-align: right;
+  }
+  .header-user strong { color: rgba(255,255,255,0.85); display: block; font-size: 13px; }
+  .header-btn {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: rgba(255,255,255,0.6); font-size: 12px;
+    padding: 6px 12px; cursor: pointer;
+    transition: all 0.15s; white-space: nowrap;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .header-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+  .header-btn.danger:hover { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); color: #f87171; }
+
+  /* ── Main Layout ───────────────────────────────────────── */
+  .app-body { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+  /* ── Metrics ───────────────────────────────────────────── */
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px; margin-bottom: 20px;
+  }
+  .metric-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    position: relative; overflow: hidden;
+  }
+  .metric-card::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--accent);
+  }
+  .metric-card.warn::before { background: var(--warn); }
+  .metric-card.danger::before { background: var(--danger); }
+  .metric-card.purple::before { background: #8b5cf6; }
+  .metric-card.sky::before { background: #0ea5e9; }
+  .metric-label {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 6px;
+  }
+  .metric-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px; font-weight: 500; color: var(--text-primary);
+    line-height: 1;
+  }
+  .metric-value.green { color: #059669; }
+  .metric-value.red { color: #dc2626; }
+  .metric-value.amber { color: #d97706; }
+
+  /* ── Navigation ────────────────────────────────────────── */
+  .nav-bar {
+    display: flex; flex-wrap: wrap; gap: 4px;
+    margin-bottom: 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 6px;
+  }
+  .tab-btn {
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 12px; font-weight: 600;
+    cursor: pointer; border: none;
+    transition: all 0.15s;
+    white-space: nowrap;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+  }
+  .tab-btn:hover { background: var(--surface); color: var(--text-primary); }
+  .tab-btn.active {
+    background: var(--brand-900); color: #fff;
+    box-shadow: 0 2px 8px rgba(15,23,42,0.25);
+  }
+
+  /* ── Panels ────────────────────────────────────────────── */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ── Cards ─────────────────────────────────────────────── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .card + .card, .card-space { margin-top: 16px; }
+  .card-title {
+    font-size: 15px; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .card-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
+
+  /* ── Section Dividers ──────────────────────────────────── */
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 10px; margin-bottom: 14px;
+  }
+
+  /* ── Form Controls ─────────────────────────────────────── */
+  .form-label {
+    display: block; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 5px;
+  }
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; color: var(--text-primary);
+    background: #fff;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(16,185,129,0.08);
+  }
+  .form-textarea { resize: vertical; }
+
+  /* ── Buttons ───────────────────────────────────────────── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 16px; border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px; font-weight: 700;
+    cursor: pointer; border: none;
+    transition: all 0.15s; white-space: nowrap;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .btn-primary { background: var(--brand-900); color: #fff; }
+  .btn-primary:hover { background: #1e293b; }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-accent:hover { background: var(--accent-dark); }
+  .btn-warn { background: #f59e0b; color: #fff; }
+  .btn-warn:hover { background: #d97706; }
+  .btn-danger { background: #ef4444; color: #fff; }
+  .btn-danger:hover { background: #dc2626; }
+  .btn-ghost {
+    background: transparent; color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { background: var(--surface); color: var(--text-primary); }
+  .btn-sm { padding: 5px 10px; font-size: 11px; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── Tables ────────────────────────────────────────────── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: var(--surface); }
+  th {
+    text-align: left; padding: 9px 12px;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 10px 12px; font-size: 13px;
+    border-bottom: 1px solid rgba(226,232,240,0.5);
+    vertical-align: middle;
+  }
+  tr:hover td { background: rgba(248,250,252,0.7); }
+  tr:last-child td { border-bottom: none; }
+
+  /* ── Badges ─────────────────────────────────────────────── */
+  .badge {
+    display: inline-block; padding: 3px 8px;
+    border-radius: 20px; font-size: 11px; font-weight: 700;
+    line-height: 1.4;
+  }
+  .badge-green { background: #d1fae5; color: #065f46; }
+  .badge-red { background: #fee2e2; color: #991b1b; }
+  .badge-amber { background: #fef3c7; color: #92400e; }
+  .badge-sky { background: #e0f2fe; color: #075985; }
+  .badge-purple { background: #ede9fe; color: #5b21b6; }
+  .badge-slate { background: #f1f5f9; color: #475569; }
+
+  /* ── Toast ──────────────────────────────────────────────── */
+  #toastContainer {
+    position: fixed; bottom: 20px; right: 20px;
+    z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+    pointer-events: none;
+  }
+  .toast {
+    padding: 12px 16px; border-radius: 10px;
+    font-size: 13px; font-weight: 500; color: #fff;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    animation: slideIn 0.25s ease, fadeOut 0.3s ease 2.7s forwards;
+    max-width: 320px;
+  }
+  .toast.success { background: #059669; }
+  .toast.error { background: #dc2626; }
+  .toast.warn { background: #d97706; }
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes fadeOut { to { opacity: 0; transform: translateX(10px); } }
+
+  /* ── Access Denied ──────────────────────────────────────── */
+  .access-denied {
+    text-align: center; padding: 60px 20px;
+    color: var(--text-muted);
+  }
+  .access-denied .icon { font-size: 40px; margin-bottom: 12px; }
+  .access-denied h3 { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+  .access-denied p { font-size: 13px; }
+
+  /* ── Progress Bars ──────────────────────────────────────── */
+  .prog-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .prog-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.3s; }
+  .prog-fill.warn { background: var(--warn); }
+  .prog-fill.danger { background: var(--danger); }
+
+  /* ── Audit Log ───────────────────────────────────────────── */
+  .audit-row {
+    display: flex; align-items: baseline; gap: 10px;
+    padding: 7px 0; border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .audit-ts { color: var(--text-muted); white-space: nowrap; font-family: 'DM Mono', monospace; font-size: 11px; }
+  .audit-user { font-weight: 700; color: var(--brand-800); }
+  .audit-action { padding: 1px 6px; border-radius: 4px; background: var(--surface); font-family: 'DM Mono', monospace; font-size: 10px; }
+
+  /* ── Responsive ─────────────────────────────────────────── */
+  @media (max-width: 640px) {
+    .header-inner { padding: 0 12px; gap: 8px; }
+    .header-user { display: none; }
+    .app-body { padding: 12px; }
+    .metric-grid { grid-template-columns: repeat(2, 1fr); }
+    .auth-card { padding: 28px 20px; }
+  }
+
+  /* ── Print ─────────────────────────────────────────────── */
+  /* ── Session Expiry Bar ─────────────────────────────────── */
+  #sessionBar {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 500;
+    background: #1e293b; color: #fff;
+    padding: 8px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px; gap: 12px;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+  }
+  #sessionBar.visible { transform: translateY(0); }
+  #sessionBar .bar-track {
+    flex: 1; height: 4px; background: rgba(255,255,255,0.2);
+    border-radius: 2px; overflow: hidden; max-width: 200px;
+  }
+  #sessionBar .bar-fill { height: 100%; background: #10b981; border-radius: 2px; transition: width 1s linear, background 1s; }
+  #sessionBar .bar-fill.warn { background: #f59e0b; }
+  #sessionBar .bar-fill.danger { background: #ef4444; }
+
+  /* ── Password Strength ──────────────────────────────────── */
+  .pwd-strength { height: 4px; border-radius: 2px; margin-top: 6px; transition: all 0.3s; background: var(--border); }
+  .pwd-strength-label { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+
+  @media print {
+    #authScreen, .app-header, .nav-bar, #sessionBar, .no-print { display: none !important; }
+    .app-body { padding: 0; max-width: 100%; }
+    #printArea { display: block !important; }
+    .panel { display: block !important; }
+  }
+  #printArea { display: none; }
+
+  /* ── User Mgmt ──────────────────────────────────────────── */
+  .user-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+  .user-avatar {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px; color: #fff;
+    flex-shrink: 0;
+  }
+  .session-warn {
+    background: #fef9c3; border: 1px solid #fde68a;
+    border-radius: 8px; padding: 8px 12px;
+    font-size: 12px; color: #92400e;
+    margin-bottom: 14px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     AUTH SCREEN
+═══════════════════════════════════════════════════════════ -->
+<div id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">KS</div>
+    <div class="auth-title">Kampala School<br>&amp; Academy</div>
+    <div class="auth-sub">Management Portal · Secure Sign-In</div>
+
+    <div id="authError" class="auth-error"></div>
+
+    <form id="loginForm" autocomplete="on">
+      <div style="margin-bottom:14px">
+        <label class="auth-label" for="loginUsername">Username</label>
+        <input class="auth-input" type="text" id="loginUsername" name="username"
+          autocomplete="username" placeholder="e.g. exec" required />
+      </div>
+      <div style="margin-bottom:20px">
+        <label class="auth-label" for="loginPassword">Password</label>
+        <input class="auth-input" type="password" id="loginPassword" name="password"
+          autocomplete="current-password" placeholder="••••••••" required />
+      </div>
+      <button class="auth-btn" type="submit" id="loginBtn">Sign In →</button>
+    </form>
+
+    <div class="role-pills">
+      <div style="font-size:10px; color:rgba(255,255,255,0.25); width:100%; margin-bottom:2px; text-transform:uppercase; letter-spacing:0.06em;">Quick fill ↓</div>
+      <span class="role-pill" onclick="quickFill('exec')">Executive</span>
+      <span class="role-pill" onclick="quickFill('admin')">Admin</span>
+      <span class="role-pill" onclick="quickFill('bursary')">Bursary</span>
+      <span class="role-pill" onclick="quickFill('coach')">Coach</span>
+    </div>
+    <div style="margin-top:14px;font-size:10px;color:rgba(255,255,255,0.2);text-align:center;line-height:1.5">
+      Default passwords: Exec@2026 · Admin@2026 · Bursary@2026 · Coach@2026<br>
+      You will be prompted to change on first login.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHANGE PASSWORD MODAL
+═══════════════════════════════════════════════════════════ -->
+<div id="changePwdModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-title">🔐 Change Your Password</div>
+    <div class="modal-sub">You must set a new password before continuing.</div>
+    <div class="session-warn">Your account is using a default password. For security, please set a unique password now.</div>
+    <div id="changePwdError" style="background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:10px 12px;font-size:13px;color:#991b1b;margin-bottom:14px;display:none;"></div>
+    <div style="margin-bottom:12px">
+      <label class="form-label">Current Password</label>
+      <input class="form-input" type="password" id="cpCurrent" placeholder="Your current (default) password" />
+    </div>
+    <div style="margin-bottom:12px">
+      <label class="form-label">New Password (min 8 characters)</label>
+      <input class="form-input" type="password" id="cpNew" placeholder="Strong new password" oninput="checkPwdStrength(this.value)" />
+      <div class="pwd-strength" id="pwdStrengthBar" style="width:0%"></div>
+      <div class="pwd-strength-label" id="pwdStrengthLabel"></div>
+    </div>
+    <div style="margin-bottom:20px">
+      <label class="form-label">Confirm New Password</label>
+      <input class="form-input" type="password" id="cpConfirm" placeholder="Repeat new password" />
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" style="flex:1" onclick="submitChangePassword()">Update Password</button>
+      <button class="btn btn-ghost" onclick="skipPasswordChange()">Skip for now</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     GENERIC MODAL
+═══════════════════════════════════════════════════════════ -->
+<div id="genericModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="modal-title" id="genericModalTitle">Details</div>
+      <button onclick="closeGenericModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-muted)">&times;</button>
+    </div>
+    <div id="genericModalBody"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     APP SHELL
+═══════════════════════════════════════════════════════════ -->
+<div id="appShell">
+
+  <!-- Header -->
+  <header class="app-header no-print">
+    <div class="header-inner">
+      <div class="header-logo">KS</div>
+      <div class="header-title">
+        Kampala School &amp; Academy
+        <div class="header-subtitle">Management Portal</div>
+      </div>
+      <div class="role-badge" id="headerRoleBadge">—</div>
+      <div class="header-user" id="headerUser">
+        <strong id="headerUserName">—</strong>
+        <span id="headerUserRole">—</span>
+      </div>
+      <!-- Export / Import (role-gated) -->
+      <button id="exportBtn" class="header-btn" style="display:none">⬇ Export</button>
+      <label id="importLabel" class="header-btn" style="display:none;cursor:pointer">
+        ⬆ Import
+        <input id="importInput" type="file" accept="application/json" style="display:none" />
+      </label>
+      <button id="changePwdBtn" class="header-btn" onclick="openChangePwd()">🔑 Pwd</button>
+      <button class="header-btn danger" onclick="handleLogout()">Sign Out</button>
+    </div>
+  </header>
+
+  <!-- Body -->
+  <div class="app-body">
+
+    <!-- Metrics (rendered per role) -->
+    <div class="metric-grid" id="metricsRow"></div>
+
+    <!-- Navigation -->
+    <nav class="nav-bar no-print" id="navBar"></nav>
+
+    <!-- ─── PANEL: OVERVIEW ─────────────────────────────── -->
+    <section id="panel-overview" class="panel">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
+        <div class="card">
+          <div class="card-title">Welcome, Administrator</div>
+          <div class="card-sub">Offline-first portal. All data stored locally on this device.</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:var(--surface);border-radius:8px;padding:12px">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted)">Cleared</div>
+              <div id="metricCleared" style="font-size:22px;font-weight:500;font-family:'DM Mono',monospace;color:#059669">0</div>
+            </div>
+            <div style="background:var(--surface);border-radius:8px;padding:12px">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted)">With Balance</div>
+              <div id="metricWithBalance" style="font-size:22px;font-weight:500;font-family:'DM Mono',monospace;color:#dc2626">0</div>
+            </div>
+            <div style="background:var(--surface);border-radius:8px;padding:12px">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted)">Athletes</div>
+              <div id="metricAthletes" style="font-size:22px;font-weight:500;font-family:'DM Mono',monospace;color:#7c3aed">0</div>
+            </div>
+            <div style="background:var(--surface);border-radius:8px;padding:12px">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted)">Avg Attendance</div>
+              <div id="metricAttendance" style="font-size:22px;font-weight:500;font-family:'DM Mono',monospace">0%</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Enrollment by Level</div>
+          <div id="levelBreakdown" style="display:flex;flex-direction:column;gap:10px"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Recent Payments</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Student</th><th style="text-align:right">Amount</th></tr></thead>
+              <tbody id="recentPaymentsBody"><tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:20px">No payments yet.</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── PANEL: DIRECTORY ────────────────────────────── -->
+    <section id="panel-directory" class="panel">
+      <div class="card">
+        <div class="section-header">
+          <div class="card-title">Student Directory</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+            <button id="bulkSmsBtn" class="btn btn-warn btn-sm">📲 Bulk Fee Reminders</button>
+            <select id="levelFilter" class="form-select" style="width:auto">
+              <option value="">All Levels</option>
+              <option value="Pre-Primary">Pre-Primary</option>
+              <option value="Primary">Primary</option>
+              <option value="O Level">O Level</option>
+              <option value="A Level">A Level</option>
+              <option value="Other">Other</option>
+            </select>
+            <input id="searchInput" type="text" class="form-input" style="width:200px" placeholder="Search name or class…" />
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>ID</th><th>Name</th><th>Class</th><th>Level</th>
+              <th>Gender</th><th>Boarding</th><th>Guardian</th><th>Sport</th>
+              <th style="text-align:right">Fees</th>
+              <th style="text-align:right">Paid</th><th>Status</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="studentTableBody">
+              <tr><td colspan="12" style="text-align:center;color:var(--text-muted);padding:24px">No students registered yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── PANEL: ACADEMICS ────────────────────────────── -->
+    <section id="panel-academics" class="panel">
+      <div class="card" id="academicFormCard">
+        <div class="card-title">Record Subject Score</div>
+        <div class="card-sub">Uganda curriculum auto-grading (Primary · O Level · A Level)</div>
+        <form id="academicForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;align-items:end">
+          <div style="min-width:180px">
+            <label class="form-label">Student</label>
+            <select name="studentId" id="academicStudentSelect" required class="form-select"><option value="">-- choose --</option></select>
+          </div>
+          <div>
+            <label class="form-label">Term</label>
+            <select name="term" class="form-select"><option>Term 1</option><option>Term 2</option><option>Term 3</option></select>
+          </div>
+          <div>
+            <label class="form-label">Subject</label>
+            <input name="subject" required type="text" list="subjectList" class="form-input" placeholder="Mathematics" />
+            <datalist id="subjectList"></datalist>
+          </div>
+          <div>
+            <label class="form-label">Score (%)</label>
+            <input name="score" required type="number" min="0" max="100" class="form-input" />
+          </div>
+          <div>
+            <button type="submit" class="btn btn-primary" style="width:100%">Add Score</button>
+          </div>
+        </form>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="section-header">
+          <div class="card-title">Academic Performance</div>
+          <select id="academicLevelFilter" class="form-select" style="width:auto">
+            <option value="">All Levels</option>
+            <option value="Primary">Primary</option>
+            <option value="O Level">O Level</option>
+            <option value="A Level">A Level</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Student</th><th>Class</th><th>Level</th><th>Subjects</th><th>Avg %</th><th>Result</th><th>Actions</th></tr></thead>
+            <tbody id="academicTableBody">
+              <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:24px">No records yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── PANEL: PAYMENTS ─────────────────────────────── -->
+    <section id="panel-payments" class="panel">
+      <div class="card">
+        <div class="card-title">Payment Ledger</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Student ID</th><th>Name</th><th>Class</th><th style="text-align:right">Amount (UGX)</th></tr></thead>
+            <tbody id="paymentsTableBody">
+              <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px">No payments recorded.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── PANEL: SPORTS ───────────────────────────────── -->
+    <section id="panel-sports" class="panel">
+      <div class="card">
+        <div class="card-title">Active Programs</div>
+        <div class="card-sub">Training programs offered — schedule, coach, requirements &amp; enrolment</div>
+        <div id="programsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:4px">
+          <div style="text-align:center;color:var(--text-muted);padding:32px;grid-column:1/-1">No programs yet. Add one in Administration.</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="section-header">
+          <div>
+            <div class="card-title">Performance &amp; Activity Log</div>
+            <div class="card-sub">Latest skill evaluations per athlete</div>
+          </div>
+          <select id="sportFilter" class="form-select" style="width:auto"><option value="">All Sports</option></select>
+        </div>
+        <div id="logPerfCard" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
+          <form id="performanceForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;align-items:end">
+            <div>
+              <label class="form-label">Athlete</label>
+              <select name="studentId" id="perfStudentSelect" class="form-select"><option value="">-- choose --</option></select>
+            </div>
+            <div>
+              <label class="form-label">Skill Level</label>
+              <select name="skillLevel" class="form-select">
+                <option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Elite</option>
+              </select>
+            </div>
+            <div style="grid-column:span 2">
+              <label class="form-label">Coaching Note</label>
+              <input name="note" type="text" class="form-input" placeholder="e.g. Excellent passing range, improved stamina" required />
+            </div>
+            <div>
+              <button type="submit" class="btn btn-primary" style="width:100%">Log Evaluation</button>
+            </div>
+          </form>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Student</th><th>Class</th><th>Sport</th><th>Skill</th><th>Latest Evaluation</th><th>Notes</th></tr></thead>
+            <tbody id="performanceTableBody">
+              <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">No athletes tracked yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── PANEL: ATTENDANCE ───────────────────────────── -->
+    <section id="panel-attendance" class="panel">
+      <div class="card">
+        <div class="card-title">Mark Session Attendance</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:14px">
+          <div>
+            <label class="form-label">Program</label>
+            <select id="attendanceProgram" class="form-select"><option value="">-- choose --</option></select>
+          </div>
+          <div>
+            <label class="form-label">Session Date</label>
+            <input id="attendanceDate" type="date" class="form-input" />
+          </div>
+          <div style="display:flex;align-items:flex-end">
+            <button id="saveAttendanceBtn" class="btn btn-primary" style="width:100%">Save Session</button>
+          </div>
+        </div>
+        <div id="attendanceRoster" style="border:1px solid var(--border);border-radius:10px;max-height:340px;overflow-y:auto">
+          <div style="text-align:center;color:var(--text-muted);padding:24px;font-size:13px">Select a program to load enrolled athletes.</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-title">Athlete Attendance Rates</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Student</th><th>Sport</th><th>Sessions</th><th>Present</th><th>Rate</th></tr></thead>
+            <tbody id="attendanceTableBody">
+              <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px">No sessions recorded.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── PANEL: BURSARY ──────────────────────────────── -->
+    <section id="panel-bursary" class="panel">
+      <div class="card">
+        <div class="card-title">Sports Bursary Eligibility</div>
+        <div class="card-sub">Auto-evaluated: Skill ≥ Advanced · Attendance ≥ 75% · ≥3 evaluations</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Student</th><th>Class · Level</th><th>Sport · Skill</th>
+              <th>Attendance</th><th>Evaluations</th><th>Score</th>
+              <th>Awarded</th><th>Action</th>
+            </tr></thead>
+            <tbody id="bursaryTableBody">
+              <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:24px">No athletes registered.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── PANEL: CONDUCT ──────────────────────────────── -->
+    <section id="panel-conduct" class="panel">
+      <div class="card" id="conductFormCard">
+        <div class="card-title">Log Conduct Entry</div>
+        <div class="card-sub">Commendations, warnings, disciplinary actions</div>
+        <form id="conductForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;align-items:end">
+          <div style="min-width:180px">
+            <label class="form-label">Student</label>
+            <select name="studentId" id="conductStudentSelect" required class="form-select"><option value="">-- choose --</option></select>
+          </div>
+          <div>
+            <label class="form-label">Type</label>
+            <select name="type" required class="form-select">
+              <option>Commendation</option><option>Verbal Warning</option>
+              <option>Written Warning</option><option>Detention</option>
+              <option>Suspension</option><option>Manual Work</option><option>Counselling</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Severity</label>
+            <select name="severity" required class="form-select">
+              <option value="Positive">Positive</option><option value="Minor">Minor</option>
+              <option value="Major">Major</option><option value="Severe">Severe</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Reported By</label>
+            <input name="reportedBy" required type="text" class="form-input" placeholder="Mr. Kato" />
+          </div>
+          <div style="grid-column:1/-1">
+            <label class="form-label">Description</label>
+            <textarea name="description" required rows="2" class="form-textarea" placeholder="e.g. Assisted junior students during assembly."></textarea>
+          </div>
+          <div style="grid-column:1/-1;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer">
+              <input type="checkbox" name="notifyGuardian" style="accent-color:var(--danger)" />
+              SMS guardian after saving
+            </label>
+            <button type="submit" class="btn btn-danger btn-sm" style="margin-left:auto">Save Entry</button>
+          </div>
+        </form>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="section-header">
+          <div class="card-title">Conduct Log</div>
+          <select id="conductFilter" class="form-select" style="width:auto">
+            <option value="">All Types</option>
+            <option value="Positive">Positive</option>
+            <option value="Minor">Minor</option>
+            <option value="Major">Major</option>
+            <option value="Severe">Severe</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Student</th><th>Class</th><th>Type</th><th>Severity</th><th>Description</th><th>Reported By</th><th>Actions</th></tr></thead>
+            <tbody id="conductTableBody">
+              <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:24px">No conduct entries.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── PANEL: REPORTS ──────────────────────────────── -->
+    <section id="panel-reports" class="panel">
+      <div class="card">
+        <div class="card-title">Enrollment by Level</div>
+        <div id="levelStats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-top:8px"></div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-title">Class-by-Class Breakdown</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Class</th><th>Level</th><th>Students</th><th>Avg %</th><th>Cleared</th><th>Outstanding</th><th>Athletes</th></tr></thead>
+            <tbody id="classStatsBody">
+              <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:24px">No data.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:16px">
+        <div class="card">
+          <div class="card-title">Sports Participation</div>
+          <div id="sportStats" style="margin-top:10px;display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Financial Summary</div>
+          <div id="financeStats" style="margin-top:10px;display:flex;flex-direction:column;gap:6px;font-size:13px"></div>
+        </div>
+      </div>
+
+      <!-- Gender Breakdown -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:16px">
+        <div class="card">
+          <div class="card-title">Gender Breakdown</div>
+          <div id="genderStats" style="margin-top:10px"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Boarding Status</div>
+          <div id="boardingStats" style="margin-top:10px"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">SEN Learners</div>
+          <div id="senStats" style="margin-top:10px"></div>
+        </div>
+      </div>
+
+      <!-- EMIS Export -->
+      <div class="card" id="emisCard" style="margin-top:16px;display:none">
+        <div class="section-header">
+          <div>
+            <div class="card-title">🇺🇬 EMIS Report — Ministry of Education</div>
+            <div class="card-sub">Uganda Education Management Information System — termly enrollment statistics</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="exportEMIS()">⬇ Export EMIS CSV</button>
+        </div>
+        <div id="emisPreview" style="margin-top:12px"></div>
+      </div>
+    </section>
+
+    <!-- ─── PANEL: ADMIN ────────────────────────────────── -->
+    <section id="panel-admin" class="panel">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
+
+        <!-- Register Student -->
+        <div class="card" id="regStudentCard">
+          <div class="card-title">Register New Student</div>
+          <form id="registerForm" style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:grid;grid-template-columns:1fr 2fr;gap:10px">
+              <div>
+                <label class="form-label">Admission No. <span style="font-weight:400;text-transform:none">(optional)</span></label>
+                <input name="admissionNo" type="text" class="form-input" placeholder="KSA/2026/0001" />
+              </div>
+              <div>
+                <label class="form-label">Full Name</label>
+                <input name="name" required type="text" class="form-input" placeholder="Nakato Sarah" />
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div>
+                <label class="form-label">Class</label>
+                <select name="class" id="classSelect" required class="form-select">
+                  <option value="">-- select --</option>
+                  <optgroup label="Pre-Primary"><option>Baby Class</option><option>Middle Class</option><option>Top Class</option></optgroup>
+                  <optgroup label="Primary"><option>P.1</option><option>P.2</option><option>P.3</option><option>P.4</option><option>P.5</option><option>P.6</option><option>P.7</option></optgroup>
+                  <optgroup label="O Level"><option>S.1</option><option>S.2</option><option>S.3</option><option>S.4</option></optgroup>
+                  <optgroup label="A Level"><option>S.5</option><option>S.6</option></optgroup>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Subjects / Combination</label>
+                <input name="combination" id="combinationInput" type="text" list="combinationList" class="form-input" placeholder="PCM or Math, English…" />
+                <datalist id="combinationList">
+                  <option value="PCM"><option value="PCB"><option value="PEM"><option value="MEG"><option value="HEG"><option value="HEL"><option value="BCM">
+                  <option value="Math, English, Science, SST, Religious Education">
+                </datalist>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div>
+                <label class="form-label">Guardian Contact</label>
+                <input name="guardian" required type="tel" class="form-input" placeholder="0772 123 456" />
+              </div>
+              <div>
+                <label class="form-label">Termly Tuition (UGX)</label>
+                <input name="fee" required type="number" min="0" step="1000" class="form-input" placeholder="450000" />
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px">
+              <div>
+                <label class="form-label">Gender</label>
+                <select name="gender" required class="form-select">
+                  <option value="">— select —</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Boarding</label>
+                <select name="boardingStatus" class="form-select">
+                  <option value="Day">Day Scholar</option>
+                  <option value="Boarding">Boarding</option>
+                  <option value="Weekly">Weekly Boarder</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">UNEB Index No. <span style="font-weight:400;text-transform:none">(S.4/S.6)</span></label>
+                <input name="unebIndexNo" type="text" class="form-input" placeholder="U0001/001" />
+              </div>
+              <div>
+                <label class="form-label">SEN / Special Needs</label>
+                <select name="senFlag" class="form-select">
+                  <option value="">None</option>
+                  <option value="Visual Impairment">Visual Impairment</option>
+                  <option value="Hearing Impairment">Hearing Impairment</option>
+                  <option value="Physical Disability">Physical Disability</option>
+                  <option value="Learning Difficulty">Learning Difficulty</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div>
+                <label class="form-label">Primary Sport</label>
+                <select name="sport" class="form-select"><option value="">— None —</option></select>
+              </div>
+              <div>
+                <label class="form-label">Skill Level</label>
+                <select name="skillLevel" class="form-select">
+                  <option value="">— N/A —</option>
+                  <option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Elite</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Register Student</button>
+          </form>
+        </div>
+
+        <!-- Record Payment -->
+        <div class="card" id="recPaymentCard">
+          <div class="card-title">Record Payment</div>
+          <form id="paymentForm" style="display:flex;flex-direction:column;gap:10px">
+            <div>
+              <label class="form-label">Student</label>
+              <select name="studentId" id="studentSelect" required class="form-select"><option value="">-- choose --</option></select>
+            </div>
+            <div id="balancePreview" style="background:var(--surface);border-radius:8px;padding:10px;font-size:12px;display:none"></div>
+            <div>
+              <label class="form-label">Amount Paid (UGX)</label>
+              <input name="amount" required type="number" min="1" step="1000" class="form-input" placeholder="150000" />
+            </div>
+            <button type="submit" class="btn btn-accent">Record Payment</button>
+          </form>
+        </div>
+
+        <!-- Add Program -->
+        <div class="card" id="addProgramCard">
+          <div class="card-title">Add Sports Program</div>
+          <form id="programForm" style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div>
+                <label class="form-label">Program Name</label>
+                <input name="name" required type="text" class="form-input" placeholder="Football U-16" />
+              </div>
+              <div>
+                <label class="form-label">Sport</label>
+                <input name="sport" required type="text" list="sportList" class="form-input" placeholder="Football" />
+                <datalist id="sportList">
+                  <option value="Football"><option value="Basketball"><option value="Volleyball"><option value="Athletics"><option value="Swimming"><option value="Netball"><option value="Rugby"><option value="Cricket"><option value="Tennis">
+                </datalist>
+              </div>
+            </div>
+            <div>
+              <label class="form-label">Coach</label>
+              <input name="coach" required type="text" class="form-input" placeholder="Mr. Opolot" />
+            </div>
+            <div>
+              <label class="form-label">Training Days</label>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;padding:8px 0">
+                <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox" name="days" value="Monday" style="accent-color:var(--accent)"> Mon</label>
+                <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox" name="days" value="Tuesday" style="accent-color:var(--accent)"> Tue</label>
+                <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox" name="days" value="Wednesday" style="accent-color:var(--accent)"> Wed</label>
+                <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox" name="days" value="Thursday" style="accent-color:var(--accent)"> Thu</label>
+                <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox" name="days" value="Friday" style="accent-color:var(--accent)"> Fri</label>
+                <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox" name="days" value="Saturday" style="accent-color:var(--accent)"> Sat</label>
+              </div>
+            </div>
+            <div>
+              <label class="form-label">Requirements (one per line)</label>
+              <textarea name="requirements" rows="3" class="form-textarea" placeholder="Football boots&#10;Team jersey&#10;Shin guards"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Program</button>
+          </form>
+        </div>
+
+        <!-- User Management (exec only) -->
+        <div class="card" id="userMgmtCard" style="display:none">
+          <div class="card-title">User Management</div>
+          <div class="card-sub">Active portal accounts — only visible to Executive role</div>
+          <div id="usersList" style="margin-bottom:16px"></div>
+          <details style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px">
+            <summary style="font-size:12px;font-weight:700;cursor:pointer;color:var(--text-primary);user-select:none">+ Add / Edit User Account</summary>
+            <form id="userEditForm" style="margin-top:14px;display:flex;flex-direction:column;gap:10px">
+              <input type="hidden" id="editUserId" value="" />
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div>
+                  <label class="form-label">Username</label>
+                  <input id="editUsername" class="form-input" type="text" placeholder="e.g. teacher1" required />
+                </div>
+                <div>
+                  <label class="form-label">Display Name</label>
+                  <input id="editDisplayName" class="form-input" type="text" placeholder="e.g. Mr. Opolot" required />
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div>
+                  <label class="form-label">Role</label>
+                  <select id="editRole" class="form-select">
+                    <option value="exec">Executive Director</option>
+                    <option value="admin">Administrator</option>
+                    <option value="bursary">Bursary Officer</option>
+                    <option value="coach">Head Coach</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">Initial Password <span style="font-weight:400;text-transform:none">(min 8 chars)</span></label>
+                  <input id="editPassword" class="form-input" type="password" placeholder="Leave blank to keep existing" />
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button type="submit" class="btn btn-primary btn-sm">Save Account</button>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="clearUserEditForm()">Clear</button>
+              </div>
+            </form>
+          </details>
+        </div>
+
+        <!-- Audit Log (exec only) -->
+        <div class="card" id="auditLogCard" style="display:none">
+          <div class="card-title">Audit Log</div>
+          <div class="card-sub">Last 50 system events</div>
+          <div id="auditLogBody" style="max-height:280px;overflow-y:auto"></div>
+        </div>
+
+      <!-- Data Management -->
+        <div class="card">
+          <div class="card-title">Data Management</div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+            <button id="adminExportBtn" class="btn btn-ghost" style="justify-content:flex-start">⬇ Export Ledger (JSON backup)</button>
+            <label id="adminImportLabel" class="btn btn-ghost" style="cursor:pointer;justify-content:flex-start;display:none">
+              ⬆ Import Ledger (restore from backup)
+              <input id="adminImportInput" type="file" accept="application/json" style="display:none" />
+            </label>
+            <button id="resetBtn" class="btn btn-danger" style="justify-content:flex-start;display:none">⚠ Reset All Data</button>
+          </div>
+        </div>
+
+        <!-- Term / Academic Year Management -->
+        <div class="card" id="termMgmtCard">
+          <div class="card-title">Academic Term Management</div>
+          <div class="card-sub">Set current term context — locks fee and academic records to the right period</div>
+          <form id="termForm" style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end;margin-bottom:14px">
+            <div>
+              <label class="form-label">Academic Year</label>
+              <input name="year" type="text" class="form-input" placeholder="2026" required />
+            </div>
+            <div>
+              <label class="form-label">Term</label>
+              <select name="term" class="form-select">
+                <option value="Term 1">Term 1 (Feb–Apr)</option>
+                <option value="Term 2">Term 2 (May–Aug)</option>
+                <option value="Term 3">Term 3 (Sep–Nov)</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Start Date</label>
+              <input name="startDate" type="date" class="form-input" />
+            </div>
+            <div>
+              <button type="submit" class="btn btn-primary">Set Term</button>
+            </div>
+            <div>
+              <label class="form-label">End Date</label>
+              <input name="endDate" type="date" class="form-input" />
+            </div>
+          </form>
+          <div id="currentTermBanner" style="background:#d1fae5;border:1px solid #6ee7b7;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:600;color:#065f46;margin-bottom:10px;display:none"></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Year</th><th>Term</th><th>Start</th><th>End</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody id="termsTableBody"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:16px">No terms set yet.</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Fee Components -->
+        <div class="card" id="feeCompCard">
+          <div class="card-title">Fee Structure Components</div>
+          <div class="card-sub">Define fee components (Tuition, PTA, Development, Boarding, Exams…) for itemised receipts</div>
+          <form id="feeCompForm" style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;margin-bottom:14px">
+            <div>
+              <label class="form-label">Component Name</label>
+              <input name="compName" type="text" class="form-input" placeholder="e.g. PTA Levy" required />
+            </div>
+            <div>
+              <label class="form-label">Default Amount (UGX)</label>
+              <input name="compAmount" type="number" min="0" step="1000" class="form-input" placeholder="50000" />
+            </div>
+            <div>
+              <button type="submit" class="btn btn-primary">Add Component</button>
+            </div>
+          </form>
+          <div id="feeCompList" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ─── PANEL: COMPETITIONS ─────────────────────────── -->
+    <section id="panel-competitions" class="panel">
+      <div class="card">
+        <div class="section-header">
+          <div>
+            <div class="card-title">Competitions & Tournaments</div>
+            <div class="card-sub">USSSA / FEASSSA / Inter-school matches and results</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openCompetitionForm()">+ Log Result</button>
+        </div>
+        <!-- Competition summary cards -->
+        <div id="compSummaryRow" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px"></div>
+        <!-- Squad selector -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+          <label class="form-label" style="margin:0">Filter by Sport:</label>
+          <select id="compSportFilter" class="form-select" style="width:auto" onchange="renderCompetitionsTable()">
+            <option value="">All Sports</option>
+          </select>
+          <label class="form-label" style="margin:0">Season:</label>
+          <select id="compSeasonFilter" class="form-select" style="width:auto" onchange="renderCompetitionsTable()">
+            <option value="">All Seasons</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Date</th><th>Event / Tournament</th><th>Sport</th><th>Level</th>
+              <th>Opponent</th><th>Venue</th><th>Result</th><th>Score</th><th>Position</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="competitionsTableBody">
+              <tr><td colspan="10" style="text-align:center;color:var(--text-muted);padding:24px">No competitions logged yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Squad Management -->
+      <div class="card" style="margin-top:16px">
+        <div class="section-header">
+          <div>
+            <div class="card-title">Squad / Team Management</div>
+            <div class="card-sub">Manage team rosters — first XI, relay squad, netball team</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openSquadForm()">+ Create Squad</button>
+        </div>
+        <div id="squadsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-top:8px">
+          <div style="text-align:center;color:var(--text-muted);padding:32px;grid-column:1/-1">No squads created yet.</div>
+        </div>
+      </div>
+
+      <!-- Athlete Profile & Stats -->
+      <div class="card" style="margin-top:16px">
+        <div class="section-header">
+          <div>
+            <div class="card-title">Athlete Profiles & Personal Bests</div>
+            <div class="card-sub">Height, weight, position, personal best times/distances</div>
+          </div>
+          <select id="athleteProfileFilter" class="form-select" style="width:auto" onchange="renderAthleteProfiles()">
+            <option value="">All Sports</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Athlete</th><th>Class</th><th>Sport</th><th>Position/Event</th>
+              <th>Height</th><th>Weight</th><th>Personal Best</th><th>Injury Status</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="athleteProfilesBody">
+              <tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:24px">No athlete profiles.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── PANEL: NOTICE BOARD ─────────────────────────── -->
+    <section id="panel-noticeboard" class="panel">
+      <div class="card">
+        <div class="section-header">
+          <div>
+            <div class="card-title">School Notice Board</div>
+            <div class="card-sub">Announcements visible to all signed-in staff roles</div>
+          </div>
+          <div id="noticeBoardPostBtn"></div>
+        </div>
+        <!-- Post notice form (shown for roles with canPostNotice) -->
+        <div id="noticeFormCard" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;display:none">
+          <form id="noticeForm" style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end">
+            <div>
+              <label class="form-label">Notice Title</label>
+              <input name="title" required type="text" class="form-input" placeholder="e.g. Term 2 begins 26 May 2026" />
+            </div>
+            <div>
+              <label class="form-label">Category</label>
+              <select name="category" class="form-select">
+                <option value="General">General</option>
+                <option value="Academic">Academic</option>
+                <option value="Finance">Finance</option>
+                <option value="Sports">Sports</option>
+                <option value="Discipline">Discipline</option>
+                <option value="Urgent">🚨 Urgent</option>
+              </select>
+            </div>
+            <div>
+              <button type="submit" class="btn btn-primary">Post Notice</button>
+            </div>
+            <div style="grid-column:1/-1">
+              <label class="form-label">Details</label>
+              <textarea name="body" rows="2" class="form-textarea" placeholder="Full notice text…"></textarea>
+            </div>
+          </form>
+        </div>
+        <div id="noticesGrid" style="display:flex;flex-direction:column;gap:10px">
+          <div style="text-align:center;color:var(--text-muted);padding:32px">No notices posted yet.</div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- end app-body -->
+</div><!-- end appShell -->
+
+<!-- Session Expiry Bar -->
+<div id="sessionBar">
+  <span id="sessionBarText">Session expires in —</span>
+  <div class="bar-track"><div class="bar-fill" id="sessionBarFill" style="width:100%"></div></div>
+  <button onclick="AUTH.refreshSession();updateSessionBar()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:#fff;font-size:11px;padding:4px 10px;cursor:pointer;font-family:'DM Sans',sans-serif">Extend</button>
+</div>
+
+<!-- Print Area -->
+<div id="printArea"></div>
+
+<!-- Toast Container -->
+<div id="toastContainer"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCRIPTS
+═══════════════════════════════════════════════════════════ -->
+<script>
+/* ═══ AUTH MODULE (inlined) ═══ */
+/**
+ * auth.js — Role-Based Authentication Module
+ * Kampala School & Academy Management Portal
+ *
+ * Roles:
+ *   exec    → Full access (all tabs + reports)
+ *   admin   → Administrative ops (students, payments, programs, conduct, admin)
+ *   bursary → Financial interface (payments, bursary, reports-finance)
+ *   coach   → Sports interface (sports, attendance, bursary-read)
+ *
+ * Storage: Credentials hashed via SHA-256 (Web Crypto API), stored in
+ *          localStorage under 'ksa_users'. Sessions stored under 'ksa_session'.
+ */
+
+'use strict';
+
+/* ─── Default Credentials (change on first login) ──────────────────────────
+   Passwords are stored as SHA-256 hashes. The defaults below are:
+     exec    → "Exec@2026"
+     admin   → "Admin@2026"
+     bursary → "Bursary@2026"
+     coach   → "Coach@2026"
+   Hash them with: AUTH.hashPassword("YourPassword") in browser console.
+─────────────────────────────────────────────────────────────────────────── */
+const DEFAULT_USERS = [
+  {
+    id: 'U001',
+    username: 'exec',
+    displayName: 'Executive Director',
+    role: 'exec',
+    // SHA-256 of "Exec@2026"
+    passwordHash: 'ac923e8c9023086b19cc87d9445223f55fbdf5662eea5fe54f07d05107f99aa8',
+    mustChangePassword: true,
+    createdAt: '2026-06-01',
+    lastLogin: null,
+  },
+  {
+    id: 'U002',
+    username: 'admin',
+    displayName: 'School Administrator',
+    role: 'admin',
+    passwordHash: 'bfd57fbbea4b125299267559a211ebf8000529d37969f18221b1dc3b79594bec',
+    mustChangePassword: true,
+    createdAt: '2026-06-01',
+    lastLogin: null,
+  },
+  {
+    id: 'U003',
+    username: 'bursary',
+    displayName: 'Bursary Officer',
+    role: 'bursary',
+    passwordHash: 'e822d8d083d535d157e9f7bd055da0bf5dc46a7395482dc9f776bbbc63132f77',
+    mustChangePassword: true,
+    createdAt: '2026-06-01',
+    lastLogin: null,
+  },
+  {
+    id: 'U004',
+    username: 'coach',
+    displayName: 'Head Coach',
+    role: 'coach',
+    passwordHash: 'c8011273d5842801cf1c1e7b16ef4a11d86929be2ded33014f45bd4334ad210e',
+    mustChangePassword: true,
+    createdAt: '2026-06-01',
+    lastLogin: null,
+  },
+];
+
+/* ─── Role → Tab Permission Map ─────────────────────────────────────────── */
+const ROLE_PERMISSIONS = {
+  exec: {
+    label: 'Executive Director',
+    color: '#6d28d9',
+    accentColor: '#7c3aed',
+    badge: 'EXEC',
+    tabs: ['overview', 'directory', 'academics', 'payments', 'sports', 'attendance', 'competitions', 'bursary', 'conduct', 'reports', 'admin', 'noticeboard'],
+    canExport: true,
+    canImport: true,
+    canReset: true,
+    canManageUsers: true,
+    canDeleteStudents: true,
+    canDeleteConduct: true,
+    canAwardBursary: true,
+    canRecordPayment: true,
+    canRegisterStudent: true,
+    canAddProgram: true,
+    canLogPerformance: true,
+    canMarkAttendance: true,
+    canAddAcademic: true,
+    canLogConduct: true,
+    canManageTerms: true,
+    canViewEMIS: true,
+    canPostNotice: true,
+    canManageCompetitions: true,
+    canManageSquads: true,
+  },
+  admin: {
+    label: 'School Administrator',
+    color: '#0369a1',
+    accentColor: '#0284c7',
+    badge: 'ADMIN',
+    tabs: ['overview', 'directory', 'academics', 'payments', 'conduct', 'admin', 'noticeboard'],
+    canExport: true,
+    canImport: true,
+    canReset: false,
+    canManageUsers: false,
+    canDeleteStudents: true,
+    canDeleteConduct: true,
+    canAwardBursary: false,
+    canRecordPayment: true,
+    canRegisterStudent: true,
+    canAddProgram: true,
+    canLogPerformance: false,
+    canMarkAttendance: false,
+    canAddAcademic: true,
+    canLogConduct: true,
+    canManageTerms: true,
+    canViewEMIS: false,
+    canPostNotice: true,
+    canManageCompetitions: false,
+    canManageSquads: false,
+  },
+  bursary: {
+    label: 'Bursary Officer',
+    color: '#065f46',
+    accentColor: '#059669',
+    badge: 'BURSARY',
+    tabs: ['payments', 'bursary', 'reports', 'noticeboard'],
+    canExport: true,
+    canImport: false,
+    canReset: false,
+    canManageUsers: false,
+    canDeleteStudents: false,
+    canDeleteConduct: false,
+    canAwardBursary: true,
+    canRecordPayment: true,
+    canRegisterStudent: false,
+    canAddProgram: false,
+    canLogPerformance: false,
+    canMarkAttendance: false,
+    canAddAcademic: false,
+    canLogConduct: false,
+    canManageTerms: false,
+    canViewEMIS: false,
+    canPostNotice: false,
+    canManageCompetitions: false,
+    canManageSquads: false,
+  },
+  coach: {
+    label: 'Head Coach',
+    color: '#92400e',
+    accentColor: '#d97706',
+    badge: 'COACH',
+    tabs: ['sports', 'attendance', 'competitions', 'bursary', 'noticeboard'],
+    canExport: false,
+    canImport: false,
+    canReset: false,
+    canManageUsers: false,
+    canDeleteStudents: false,
+    canDeleteConduct: false,
+    canAwardBursary: false,
+    canRecordPayment: false,
+    canRegisterStudent: false,
+    canAddProgram: true,
+    canLogPerformance: true,
+    canMarkAttendance: true,
+    canAddAcademic: false,
+    canLogConduct: false,
+    canManageTerms: false,
+    canViewEMIS: false,
+    canPostNotice: true,
+    canManageCompetitions: true,
+    canManageSquads: true,
+  },
+};
+
+/* ─── Audit Log ─────────────────────────────────────────────────────────── */
+function appendAuditLog(userId, username, action, detail = '') {
+  const key = 'ksa_audit';
+  let log = [];
+  try { log = JSON.parse(localStorage.getItem(key) || '[]'); } catch (_) {}
+  log.unshift({
+    ts: new Date().toISOString(),
+    userId,
+    username,
+    action,
+    detail: detail.slice(0, 200),
+  });
+  if (log.length > 500) log = log.slice(0, 500);
+  localStorage.setItem(key, JSON.stringify(log));
+}
+
+/* ─── Crypto helpers ─────────────────────────────────────────────────────── */
+async function sha256(message) {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/* ─── User Store ─────────────────────────────────────────────────────────── */
+function loadUsers() {
+  try {
+    const raw = localStorage.getItem('ksa_users');
+    if (raw) return JSON.parse(raw);
+  } catch (_) {}
+  // Seed defaults on first run
+  localStorage.setItem('ksa_users', JSON.stringify(DEFAULT_USERS));
+  return DEFAULT_USERS.map(u => ({ ...u }));
+}
+
+function saveUsers(users) {
+  localStorage.setItem('ksa_users', JSON.stringify(users));
+}
+
+/* ─── Session ────────────────────────────────────────────────────────────── */
+function createSession(user) {
+  const session = {
+    userId: user.id,
+    username: user.username,
+    displayName: user.displayName,
+    role: user.role,
+    loginAt: Date.now(),
+    expiresAt: Date.now() + 8 * 60 * 60 * 1000, // 8-hour session
+  };
+  localStorage.setItem('ksa_session', JSON.stringify(session));
+  return session;
+}
+
+function getSession() {
+  try {
+    const raw = localStorage.getItem('ksa_session');
+    if (!raw) return null;
+    const session = JSON.parse(raw);
+    if (Date.now() > session.expiresAt) {
+      localStorage.removeItem('ksa_session');
+      return null;
+    }
+    return session;
+  } catch (_) {
+    return null;
+  }
+}
+
+function clearSession() {
+  const session = getSession();
+  if (session) {
+    appendAuditLog(session.userId, session.username, 'LOGOUT', '');
+  }
+  localStorage.removeItem('ksa_session');
+}
+
+/* ─── Public AUTH API ────────────────────────────────────────────────────── */
+const AUTH = {
+  /* Hash a password (use in console to generate new hashes) */
+  async hashPassword(plain) {
+    return await sha256(plain + 'ksa_salt_2026');
+  },
+
+  /* Attempt login → returns { ok, session, mustChangePassword, error } */
+  async login(username, password) {
+    const users = loadUsers();
+    const user = users.find(u => u.username.toLowerCase() === username.toLowerCase().trim());
+    if (!user) return { ok: false, error: 'Invalid username or password.' };
+
+    const hash = await sha256(password + 'ksa_salt_2026');
+
+    // First-run: if hash is a placeholder (44-char stub), auto-accept default
+    // and force password change. In production, seed with real hashes.
+    const defaultPasswords = {
+      exec: 'Exec@2026',
+      admin: 'Admin@2026',
+      bursary: 'Bursary@2026',
+      coach: 'Coach@2026',
+    };
+    let matched = (hash === user.passwordHash);
+    // Fallback: allow default plaintext on first run (mustChangePassword flag)
+    if (!matched && user.mustChangePassword) {
+      const defPass = defaultPasswords[user.role];
+      if (defPass && password === defPass) matched = true;
+    }
+
+    if (!matched) return { ok: false, error: 'Invalid username or password.' };
+
+    // Update lastLogin
+    user.lastLogin = new Date().toISOString();
+    saveUsers(users);
+
+    const session = createSession(user);
+    appendAuditLog(user.id, user.username, 'LOGIN', `role=${user.role}`);
+    return { ok: true, session, mustChangePassword: user.mustChangePassword };
+  },
+
+  logout() {
+    clearSession();
+  },
+
+  getSession,
+
+  getPermissions(role) {
+    return ROLE_PERMISSIONS[role] || null;
+  },
+
+  can(permission) {
+    const session = getSession();
+    if (!session) return false;
+    const perms = ROLE_PERMISSIONS[session.role];
+    return perms ? !!perms[permission] : false;
+  },
+
+  hasTabAccess(tab) {
+    const session = getSession();
+    if (!session) return false;
+    const perms = ROLE_PERMISSIONS[session.role];
+    return perms ? perms.tabs.includes(tab) : false;
+  },
+
+  getDefaultTab() {
+    const session = getSession();
+    if (!session) return 'overview';
+    const perms = ROLE_PERMISSIONS[session.role];
+    if (!perms) return 'overview';
+    return perms.tabs[0];
+  },
+
+  /* Change password for current user */
+  async changePassword(currentPassword, newPassword) {
+    const session = getSession();
+    if (!session) return { ok: false, error: 'Not logged in.' };
+    if (newPassword.length < 8) return { ok: false, error: 'Password must be at least 8 characters.' };
+
+    const users = loadUsers();
+    const user = users.find(u => u.id === session.userId);
+    if (!user) return { ok: false, error: 'User not found.' };
+
+    const currentHash = await sha256(currentPassword + 'ksa_salt_2026');
+    const defaultPasswords = { exec: 'Exec@2026', admin: 'Admin@2026', bursary: 'Bursary@2026', coach: 'Coach@2026' };
+    const defPass = defaultPasswords[user.role];
+    const validCurrent = (currentHash === user.passwordHash) || (user.mustChangePassword && currentPassword === defPass);
+    if (!validCurrent) return { ok: false, error: 'Current password is incorrect.' };
+
+    user.passwordHash = await sha256(newPassword + 'ksa_salt_2026');
+    user.mustChangePassword = false;
+    saveUsers(users);
+    appendAuditLog(session.userId, session.username, 'PASSWORD_CHANGE', '');
+    return { ok: true };
+  },
+
+  /* Admin: create or update user (exec only) */
+  async upsertUser(userData) {
+    const session = getSession();
+    if (!session || session.role !== 'exec') return { ok: false, error: 'Insufficient privileges.' };
+    const users = loadUsers();
+    const idx = users.findIndex(u => u.id === userData.id);
+    if (idx >= 0) {
+      users[idx] = { ...users[idx], ...userData };
+    } else {
+      users.push({
+        id: 'U' + Date.now(),
+        mustChangePassword: true,
+        createdAt: new Date().toISOString().slice(0, 10),
+        lastLogin: null,
+        ...userData,
+      });
+    }
+    saveUsers(users);
+    appendAuditLog(session.userId, session.username, 'USER_UPSERT', `target=${userData.username}`);
+    return { ok: true };
+  },
+
+  getUsers() {
+    const session = getSession();
+    if (!session || session.role !== 'exec') return [];
+    return loadUsers().map(u => ({ ...u, passwordHash: '***' }));
+  },
+
+  getAuditLog() {
+    const session = getSession();
+    if (!session || session.role !== 'exec') return [];
+    try { return JSON.parse(localStorage.getItem('ksa_audit') || '[]'); } catch (_) { return []; }
+  },
+
+  /* Delete a user account (exec only, cannot delete self) */
+  deleteUser(userId) {
+    const session = getSession();
+    if (!session || session.role !== 'exec') return { ok: false, error: 'Insufficient privileges.' };
+    if (userId === session.userId) return { ok: false, error: 'Cannot delete your own account.' };
+    const users = loadUsers();
+    const idx = users.findIndex(u => u.id === userId);
+    if (idx < 0) return { ok: false, error: 'User not found.' };
+    const username = users[idx].username;
+    users.splice(idx, 1);
+    saveUsers(users);
+    appendAuditLog(session.userId, session.username, 'USER_DELETE', `target=${username}`);
+    return { ok: true };
+  },
+
+  /* Force-reset another user's password (exec only) */
+  async adminResetPassword(userId, newPassword) {
+    const session = getSession();
+    if (!session || session.role !== 'exec') return { ok: false, error: 'Insufficient privileges.' };
+    if (newPassword.length < 8) return { ok: false, error: 'Password must be at least 8 characters.' };
+    const users = loadUsers();
+    const user = users.find(u => u.id === userId);
+    if (!user) return { ok: false, error: 'User not found.' };
+    user.passwordHash = await sha256(newPassword + 'ksa_salt_2026');
+    user.mustChangePassword = true;
+    saveUsers(users);
+    appendAuditLog(session.userId, session.username, 'ADMIN_PWD_RESET', `target=${user.username}`);
+    return { ok: true };
+  },
+
+  /* Refresh session expiry (called on user activity) */
+  refreshSession() {
+    const session = getSession();
+    if (!session) return false;
+    session.expiresAt = Date.now() + 8 * 60 * 60 * 1000;
+    localStorage.setItem('ksa_session', JSON.stringify(session));
+    return true;
+  },
+
+  /* Remaining session time in seconds */
+  sessionSecondsLeft() {
+    const session = getSession();
+    if (!session) return 0;
+    return Math.max(0, Math.round((session.expiresAt - Date.now()) / 1000));
+  },
+
+  ROLE_PERMISSIONS,
+};
+
+window.AUTH = AUTH;
+
+</script>
+<script>
+'use strict';
+
+/* ─── Constants ──────────────────────────────────────────────────────────── */
+const SCHEMA_VERSION = 3;
+const DEFAULT_PROGRAMS = [
+  { id: 'PRG001', name: 'Football', sport: 'Football', coach: 'TBA', days: ['Tuesday','Thursday'], requirements: ['Football boots','Team jersey','Shin guards'] },
+  { id: 'PRG002', name: 'Netball', sport: 'Netball', coach: 'TBA', days: ['Monday','Wednesday'], requirements: ['Sports shoes','Team kit'] },
+  { id: 'PRG003', name: 'Athletics', sport: 'Athletics', coach: 'TBA', days: ['Monday','Wednesday','Friday'], requirements: ['Running shoes','Track kit'] },
+];
+const SPORT_OPTIONS = ['Football','Basketball','Volleyball','Athletics','Swimming','Netball','Rugby','Cricket','Tennis','Handball'];
+const PRIMARY_SUBJECTS = ['Mathematics','English Language','Science','Social Studies','Religious Education','Luganda','Kiswahili'];
+const O_LEVEL_SUBJECTS = ['Mathematics','English Language','Physics','Chemistry','Biology','Geography','History','CRE','Literature','Commerce','Agriculture','Entrepreneurship','Computer Studies','Fine Art','Music'];
+const A_LEVEL_SUBJECTS = ['Mathematics','Physics','Chemistry','Biology','Geography','History','Economics','Literature','Divinity','Art','Music','General Paper','Sub-Mathematics','ICT'];
+
+/* ─── State ──────────────────────────────────────────────────────────────── */
+let state = { version: SCHEMA_VERSION, students: [], payments: [], attendance: [], conduct: [], programs: [], competitions: [], squads: [], notices: [], terms: [], feeComponents: [] };
+let currentSession = null;
+
+/* ─── Utilities ──────────────────────────────────────────────────────────── */
+function uid() { return Math.random().toString(36).slice(2, 10).toUpperCase(); }
+function todayISO() { return new Date().toISOString().slice(0, 10); }
+function fmtUGX(n) { return 'UGX ' + Number(n || 0).toLocaleString('en-UG'); }
+function escapeHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function toast(msg, type = 'success') {
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+/* ─── Auth helpers ──────────────────────────────────────────────────────── */
+function can(permission) { return AUTH.can(permission); }
+function hasTab(tab) { return AUTH.hasTabAccess(tab); }
+
+/* ─── State persistence ─────────────────────────────────────────────────── */
+function loadState() {
+  try {
+    const raw = localStorage.getItem('kampala_school_portal_state');
+    if (raw) state = migrate(JSON.parse(raw));
+    else state.programs = DEFAULT_PROGRAMS.map(p => ({ ...p }));
+  } catch (_) {
+    state.programs = DEFAULT_PROGRAMS.map(p => ({ ...p }));
+  }
+}
+function saveState() { localStorage.setItem('kampala_school_portal_state', JSON.stringify(state)); }
+function migrate(data) {
+  if (!data.version) data.version = 1;
+  if (data.version < 2) {
+    data.programs = data.programs || DEFAULT_PROGRAMS.map(p => ({ ...p }));
+    data.conduct = data.conduct || [];
+    data.version = 2;
+  }
+  if (data.version < 3) {
+    // v3: new collections for enhanced features
+    data.competitions = data.competitions || [];
+    data.squads       = data.squads       || [];
+    data.notices      = data.notices      || [];
+    data.terms        = data.terms        || [];
+    data.feeComponents = data.feeComponents || [];
+    // v3: new student fields (backfill defaults)
+    (data.students || []).forEach(s => {
+      s.gender        = s.gender        || '';
+      s.boardingStatus = s.boardingStatus || 'Day';
+      s.unebIndexNo   = s.unebIndexNo   || '';
+      s.senFlag       = s.senFlag       || '';
+      s.feeComponents = s.feeComponents || [];   // per-student component payments
+      s.injuryLog     = s.injuryLog     || [];
+      s.athleteProfile = s.athleteProfile || {};  // height, weight, position, PBs
+    });
+    data.version = 3;
+  }
+  return data;
+}
+
+/* ─── Classification & Grading ──────────────────────────────────────────── */
+function classifyLevel(cls) {
+  if (!cls) return 'Other';
+  const c = cls.trim();
+  if (['Baby Class','Middle Class','Top Class'].includes(c)) return 'Pre-Primary';
+  if (/^P\.[1-7]$/.test(c)) return 'Primary';
+  if (/^S\.[1-4]$/.test(c)) return 'O Level';
+  if (/^S\.[5-6]$/.test(c)) return 'A Level';
+  return 'Other';
+}
+function gradeFor(level, score) {
+  if (level === 'Primary') {
+    if (score >= 85) return { grade: 'Distinction', points: 1 };
+    if (score >= 70) return { grade: 'Credit', points: 2 };
+    if (score >= 50) return { grade: 'Pass', points: 3 };
+    return { grade: 'Fail', points: 4 };
+  }
+  if (level === 'O Level') {
+    if (score >= 90) return { grade: 'D1', points: 1 };
+    if (score >= 80) return { grade: 'D2', points: 2 };
+    if (score >= 70) return { grade: 'C3', points: 3 };
+    if (score >= 60) return { grade: 'C4', points: 4 };
+    if (score >= 50) return { grade: 'C5', points: 5 };
+    if (score >= 40) return { grade: 'C6', points: 6 };
+    if (score >= 30) return { grade: 'P7', points: 7 };
+    if (score >= 20) return { grade: 'P8', points: 8 };
+    return { grade: 'F9', points: 9 };
+  }
+  if (level === 'A Level') {
+    if (score >= 90) return { grade: 'A', points: 6 };
+    if (score >= 80) return { grade: 'B', points: 5 };
+    if (score >= 70) return { grade: 'C', points: 4 };
+    if (score >= 60) return { grade: 'D', points: 3 };
+    if (score >= 50) return { grade: 'E', points: 2 };
+    return { grade: 'F', points: 0 };
+  }
+  if (score >= 50) return { grade: 'Pass', points: 1 };
+  return { grade: 'Fail', points: 0 };
+}
+function calculateDivision(agg) {
+  if (agg <= 16) return 'Division I';
+  if (agg <= 23) return 'Division II';
+  if (agg <= 30) return 'Division III';
+  if (agg <= 45) return 'Division IV';
+  return 'Ungraded';
+}
+function studentAcademicSummary(s) {
+  const ac = s.academics || [];
+  if (!ac.length) return { count: 0, avg: 0, summary: '—' };
+  const avg = Math.round(ac.reduce((a, x) => a + x.score, 0) / ac.length);
+  const agg = ac.reduce((a, x) => a + (x.points || 0), 0);
+  let summary = avg + '%';
+  if (s.level === 'O Level') summary = `Agg ${agg} · ${calculateDivision(agg)}`;
+  else if (s.level === 'A Level') summary = `Pts ${agg}`;
+  return { count: ac.length, avg, agg, summary };
+}
+function effectiveFee(s) { return Math.round(s.fee * (1 - (s.bursaryPct || 0) / 100)); }
+function studentBalance(s) { return Math.max(0, effectiveFee(s) - s.paid); }
+
+/* ─── Attendance ────────────────────────────────────────────────────────── */
+function studentAttendance(studentId) {
+  let total = 0, present = 0;
+  state.attendance.forEach(a => {
+    const r = a.records.find(x => x.studentId === studentId);
+    if (r !== undefined) { total++; if (r.present) present++; }
+  });
+  const rate = total ? Math.round((present / total) * 100) : 0;
+  return { total, present, rate };
+}
+
+/* ─── Bursary ───────────────────────────────────────────────────────────── */
+function bursaryScore(s) {
+  const skillPoints = ['Advanced', 'Elite'].includes(s.skillLevel) ? 1 : 0;
+  const att = studentAttendance(s.id);
+  const attPoints = att.rate / 100;
+  const evalPoints = Math.min((s.performanceNotes || []).length, 3) / 3;
+  return Math.round((skillPoints * 40) + (attPoints * 40) + (evalPoints * 20));
+}
+function bursaryEligible(s) { return s.sport && bursaryScore(s) >= 70; }
+
+/* ─── Skill Badge ───────────────────────────────────────────────────────── */
+function skillBadge(level) {
+  const m = { Beginner: 'badge-slate', Intermediate: 'badge-sky', Advanced: 'badge-green', Elite: 'badge-purple' };
+  return `<span class="badge ${m[level] || 'badge-slate'}">${escapeHtml(level || '—')}</span>`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BUSINESS LOGIC
+═══════════════════════════════════════════════════════════ */
+function registerStudent(f) {
+  if (!can('canRegisterStudent')) return toast('Access denied', 'error');
+  let id = (f.admissionNo || '').trim();
+  if (id) {
+    if (state.students.some(s => s.id.toLowerCase() === id.toLowerCase()))
+      return toast('Admission No. "' + id + '" already in use', 'error');
+  } else { id = 'S' + uid().slice(0, 6); }
+  state.students.push({
+    id, name: f.name.trim(), class: f.class.trim(),
+    level: classifyLevel(f.class),
+    combination: (f.combination || '').split(',').map(s => s.trim()).filter(Boolean).join(', '),
+    guardian: f.guardian.trim(), fee: Number(f.fee), paid: 0,
+    sport: (f.sport || '').trim(), skillLevel: (f.skillLevel || '').trim(),
+    gender: (f.gender || '').trim(),
+    boardingStatus: (f.boardingStatus || 'Day').trim(),
+    unebIndexNo: (f.unebIndexNo || '').trim(),
+    senFlag: (f.senFlag || '').trim(),
+    performanceNotes: [], academics: [], bursaryPct: 0,
+    feeComponents: [], injuryLog: [], athleteProfile: {},
+    createdAt: todayISO(),
+  });
+  saveState(); renderAll();
+  toast('Student registered: ' + f.name + ' (' + id + ')', 'success');
+}
+
+function recordPayment(studentId, amount) {
+  if (!can('canRecordPayment')) return toast('Access denied', 'error');
+  const s = state.students.find(x => x.id === studentId);
+  if (!s) return toast('Student not found', 'error');
+  amount = Number(amount);
+  if (!amount || amount <= 0) return toast('Enter a valid amount', 'error');
+  s.paid += amount;
+  state.payments.push({ id: 'P' + uid(), studentId, amount, date: todayISO() });
+  saveState(); renderAll();
+  toast('Payment of ' + fmtUGX(amount) + ' recorded', 'success');
+}
+
+function deleteStudent(id) {
+  if (!can('canDeleteStudents')) return toast('Access denied', 'error');
+  if (!confirm('Delete this student and all related records?')) return;
+  state.students = state.students.filter(s => s.id !== id);
+  state.payments = state.payments.filter(p => p.studentId !== id);
+  state.attendance.forEach(a => a.records = a.records.filter(r => r.studentId !== id));
+  state.conduct = state.conduct.filter(c => c.studentId !== id);
+  saveState(); renderAll();
+  toast('Student removed', 'success');
+}
+
+function resetAll() {
+  if (!can('canReset')) return toast('Access denied', 'error');
+  if (!confirm('Erase ALL data?')) return;
+  if (!confirm('Absolutely sure? This cannot be undone.')) return;
+  state = { version: SCHEMA_VERSION, students: [], payments: [], attendance: [], conduct: [], programs: DEFAULT_PROGRAMS.map(p => ({ ...p })), competitions: [], squads: [], notices: [], terms: [], feeComponents: [] };
+  saveState(); renderAll();
+  toast('All data cleared', 'success');
+}
+
+function addConduct(f) {
+  if (!can('canLogConduct')) return toast('Access denied', 'error');
+  const s = state.students.find(x => x.id === f.studentId);
+  if (!s) return toast('Student not found', 'error');
+  const entry = {
+    id: 'CON' + uid().slice(0, 5), studentId: f.studentId, date: todayISO(),
+    type: f.type, severity: f.severity,
+    description: (f.description || '').trim(), reportedBy: (f.reportedBy || '').trim(),
+  };
+  state.conduct.push(entry);
+  saveState(); renderAll();
+  toast('Conduct entry saved for ' + s.name, 'success');
+  if (f.notifyGuardian) smsConduct(entry.id);
+}
+
+function deleteConduct(id) {
+  if (!can('canDeleteConduct')) return toast('Access denied', 'error');
+  if (!confirm('Delete this conduct entry?')) return;
+  state.conduct = state.conduct.filter(c => c.id !== id);
+  saveState(); renderAll();
+  toast('Conduct entry removed', 'success');
+}
+
+function addProgram(f) {
+  if (!can('canAddProgram')) return toast('Access denied', 'error');
+  state.programs.push({
+    id: 'PRG' + uid().slice(0, 5), name: f.name.trim(), sport: f.sport.trim(),
+    coach: f.coach.trim(),
+    days: Array.isArray(f.days) ? f.days : [f.days].filter(Boolean),
+    requirements: (f.requirements || '').split('\n').map(s => s.trim()).filter(Boolean),
+  });
+  saveState(); renderAll();
+  toast('Program added: ' + f.name, 'success');
+}
+function deleteProgram(id) {
+  if (!can('canAddProgram')) return toast('Access denied', 'error');
+  if (!confirm('Remove this program?')) return;
+  state.programs = state.programs.filter(p => p.id !== id);
+  state.attendance = state.attendance.filter(a => a.programId !== id);
+  saveState(); renderAll();
+  toast('Program removed', 'success');
+}
+
+function logPerformance(studentId, skillLevel, note) {
+  if (!can('canLogPerformance')) return toast('Access denied', 'error');
+  const s = state.students.find(x => x.id === studentId);
+  if (!s) return toast('Student not found', 'error');
+  if (!note || !note.trim()) return toast('Please add a note', 'error');
+  s.skillLevel = skillLevel;
+  if (!Array.isArray(s.performanceNotes)) s.performanceNotes = [];
+  s.performanceNotes.push({ date: todayISO(), skillLevel, note: note.trim() });
+  saveState(); renderAll();
+  toast('Performance note saved for ' + s.name, 'success');
+}
+
+function addAcademicScore(f) {
+  if (!can('canAddAcademic')) return toast('Access denied', 'error');
+  const s = state.students.find(x => x.id === f.studentId);
+  if (!s) return toast('Student not found', 'error');
+  const score = Number(f.score);
+  if (isNaN(score) || score < 0 || score > 100) return toast('Score must be 0–100', 'error');
+  const g = gradeFor(s.level, score);
+  s.academics.push({
+    id: 'AC' + uid().slice(0, 5), term: f.term, subject: f.subject.trim(),
+    score, grade: g.grade, points: g.points, date: todayISO(),
+  });
+  saveState(); renderAll();
+  toast('Score saved: ' + f.subject + ' ' + score + '% (' + g.grade + ')', 'success');
+}
+
+function saveAttendance(programId, date, records) {
+  if (!can('canMarkAttendance')) return toast('Access denied', 'error');
+  if (!programId || !date) return toast('Choose program and date', 'error');
+  state.attendance = state.attendance.filter(a => !(a.programId === programId && a.date === date));
+  state.attendance.push({ id: 'ATT' + uid().slice(0, 5), programId, date, records });
+  saveState(); renderAll();
+  toast('Attendance saved for ' + date, 'success');
+}
+
+function setBursary(studentId) {
+  if (!can('canAwardBursary')) return toast('Access denied', 'error');
+  const s = state.students.find(x => x.id === studentId);
+  if (!s) return;
+  const input = prompt(`Bursary % for ${s.name} (0–100). Current: ${s.bursaryPct || 0}%`, s.bursaryPct || 0);
+  if (input === null) return;
+  s.bursaryPct = Math.max(0, Math.min(100, Number(input) || 0));
+  saveState(); renderAll();
+  toast('Bursary set to ' + s.bursaryPct + '% for ' + s.name, 'success');
+}
+
+/* ─── Phone / SMS ────────────────────────────────────────────────────────── */
+function normalizePhone(raw) {
+  if (!raw) return '';
+  const d = String(raw).replace(/[^0-9+]/g, '');
+  if (d.startsWith('+')) return d;
+  if (d.startsWith('256')) return '+' + d;
+  if (d.startsWith('0') && d.length === 10) return '+256' + d.slice(1);
+  return d;
+}
+function smsBalance(studentId) {
+  const s = state.students.find(x => x.id === studentId);
+  if (!s) return;
+  const phone = normalizePhone(s.guardian);
+  if (!phone) return toast('No guardian phone on file', 'error');
+  const fee = effectiveFee(s), bal = Math.max(0, fee - s.paid);
+  const body = bal > 0
+    ? `Dear Parent/Guardian of ${s.name} (${s.class}), outstanding school fees balance: ${fmtUGX(bal)} of ${fmtUGX(fee)}. Kindly clear at your earliest. - Kampala School & Academy`
+    : `Dear Parent/Guardian of ${s.name} (${s.class}), thank you for clearing the fees of ${fmtUGX(fee)}. - Kampala School & Academy`;
+  window.location.href = 'sms:' + phone + '?body=' + encodeURIComponent(body);
+}
+function smsConduct(conductId) {
+  const c = state.conduct.find(x => x.id === conductId);
+  if (!c) return;
+  const s = state.students.find(x => x.id === c.studentId);
+  if (!s) return;
+  const phone = normalizePhone(s.guardian);
+  if (!phone) return toast('No guardian phone on file', 'error');
+  const opener = c.severity === 'Positive'
+    ? `Dear Parent/Guardian of ${s.name} (${s.class}), pleased to share a commendation:`
+    : `Dear Parent/Guardian of ${s.name} (${s.class}), ${c.severity.toLowerCase()} conduct on ${c.date}:`;
+  const body = `${opener} "${c.description}" — ${c.reportedBy || 'school staff'}. Kampala School & Academy`;
+  window.location.href = 'sms:' + phone + '?body=' + encodeURIComponent(body);
+}
+function openBulkSms() {
+  const debtors = state.students
+    .map(s => ({ s, bal: studentBalance(s) }))
+    .filter(x => x.bal > 0)
+    .sort((a, b) => b.bal - a.bal);
+  openGenericModal('Bulk Fee Reminders (' + debtors.length + ')', !debtors.length
+    ? '<p style="text-align:center;color:#059669;padding:20px">🎉 All fees cleared!</p>'
+    : `<p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Total outstanding: <strong style="color:#dc2626">${fmtUGX(debtors.reduce((a,x)=>a+x.bal,0))}</strong></p>
+      <div style="border:1px solid var(--border);border-radius:10px;max-height:360px;overflow-y:auto">
+        ${debtors.map(({s,bal}) => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-weight:600;font-size:13px">${escapeHtml(s.name)}</div>
+              <div style="font-size:11px;color:var(--text-muted)">${escapeHtml(s.class)} · ${escapeHtml(s.guardian)}</div>
+              <div style="font-size:11px;color:#dc2626;font-weight:700">Balance: ${fmtUGX(bal)}</div>
+            </div>
+            <button onclick="smsBalance('${s.id}')" class="btn btn-warn btn-sm">📲 SMS</button>
+          </div>`).join('')}
+      </div>`
+  );
+}
+
+/* ─── Export / Import ───────────────────────────────────────────────────── */
+function exportLedger() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ksa-ledger-' + todayISO() + '.json';
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('Ledger exported', 'success');
+}
+function importLedger(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data || !Array.isArray(data.students)) return toast('Invalid ledger file', 'error');
+      if (!confirm('Replace current data with imported ledger?')) return;
+      state = migrate(data); saveState(); renderAll();
+      toast('Ledger imported successfully', 'success');
+    } catch (_) { toast('Failed to parse file', 'error'); }
+  };
+  reader.readAsText(file);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER FUNCTIONS
+═══════════════════════════════════════════════════════════ */
+function renderAll() {
+  updateMetrics();
+  renderStudentTable();
+  renderPaymentsTable();
+  renderPrograms();
+  renderSportFilter();
+  renderSportOptions();
+  renderPerformanceTable();
+  renderAcademicTable();
+  renderSubjectList();
+  renderAttendanceProgramSelect();
+  renderAttendanceRoster();
+  renderAttendanceTable();
+  renderBursaryTable();
+  renderConductTable();
+  renderStatisticalReports();
+  renderStudentSelects();
+  renderCompetitionsTable();
+  renderSquadsGrid();
+  renderAthleteProfiles();
+  renderNotices();
+  renderTermsTable();
+  renderFeeComponents();
+  if (can('canManageUsers')) {
+    renderUsersList();
+    renderAuditLog();
+  }
+}
+
+function updateMetrics() {
+  const s = state.students;
+  const totalCollected = s.reduce((a, x) => a + x.paid, 0);
+  const totalOutstanding = s.reduce((a, x) => a + studentBalance(x), 0);
+  const cleared = s.filter(x => x.paid >= effectiveFee(x)).length;
+  const athletes = s.filter(x => x.sport).length;
+  const bursaryCount = s.filter(bursaryEligible).length;
+  const attRates = s.filter(x => x.sport).map(x => studentAttendance(x.id).rate);
+  const avgAtt = attRates.length ? Math.round(attRates.reduce((a,b)=>a+b,0)/attRates.length) : 0;
+
+  // Role-sensitive metrics row
+  const metricsRow = document.getElementById('metricsRow');
+  const role = currentSession ? currentSession.role : 'exec';
+  let cards = [];
+  if (['exec','admin'].includes(role)) {
+    cards.push({ label: 'Students', value: s.length, cls: '' });
+    cards.push({ label: 'Fees Collected', value: fmtUGX(totalCollected), cls: 'green' });
+    cards.push({ label: 'Outstanding', value: fmtUGX(totalOutstanding), cls: 'red', cardCls: 'danger' });
+    cards.push({ label: 'Programs', value: state.programs.length, cls: '', cardCls: 'sky' });
+    cards.push({ label: 'Bursary Eligible', value: bursaryCount, cls: 'amber', cardCls: 'warn' });
+  }
+  if (role === 'bursary') {
+    cards.push({ label: 'Total Students', value: s.length, cls: '' });
+    cards.push({ label: 'Fees Collected', value: fmtUGX(totalCollected), cls: 'green' });
+    cards.push({ label: 'Outstanding', value: fmtUGX(totalOutstanding), cls: 'red', cardCls: 'danger' });
+    cards.push({ label: 'Cleared', value: cleared, cls: 'green' });
+    cards.push({ label: 'Bursary Eligible', value: bursaryCount, cls: 'amber', cardCls: 'warn' });
+  }
+  if (role === 'coach') {
+    cards.push({ label: 'Athletes', value: athletes, cls: '' });
+    cards.push({ label: 'Programs', value: state.programs.length, cls: '', cardCls: 'sky' });
+    cards.push({ label: 'Avg Attendance', value: avgAtt + '%', cls: avgAtt >= 75 ? 'green' : 'red', cardCls: avgAtt >= 75 ? '' : 'danger' });
+    cards.push({ label: 'Bursary Eligible', value: bursaryCount, cls: 'amber', cardCls: 'warn' });
+  }
+  metricsRow.innerHTML = cards.map(c => `
+    <div class="metric-card ${c.cardCls||''}">
+      <div class="metric-label">${c.label}</div>
+      <div class="metric-value ${c.cls||''}">${c.value}</div>
+    </div>`).join('');
+
+  // Overview panel widgets
+  if (document.getElementById('metricCleared')) {
+    document.getElementById('metricCleared').textContent = cleared;
+    document.getElementById('metricWithBalance').textContent = s.length - cleared;
+    document.getElementById('metricAthletes').textContent = athletes;
+    document.getElementById('metricAttendance').textContent = avgAtt + '%';
+  }
+
+  // Level breakdown
+  const levels = ['Pre-Primary','Primary','O Level','A Level','Other'];
+  const counts = levels.map(l => s.filter(x => x.level === l).length);
+  const max = Math.max(1, ...counts);
+  const breakdown = document.getElementById('levelBreakdown');
+  if (breakdown) {
+    breakdown.innerHTML = levels.map((l,i) => `
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+          <span style="font-weight:600;color:var(--text-primary)">${l}</span>
+          <span style="color:var(--text-muted)">${counts[i]}</span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" style="width:${(counts[i]/max)*100}%"></div></div>
+      </div>`).join('');
+  }
+}
+
+function renderStudentTable() {
+  const q = (document.getElementById('searchInput').value || '').toLowerCase();
+  const levelF = (document.getElementById('levelFilter').value || '');
+  const body = document.getElementById('studentTableBody');
+  const list = state.students.filter(s =>
+    (!q || s.name.toLowerCase().includes(q) || s.class.toLowerCase().includes(q)) &&
+    (!levelF || s.level === levelF)
+  );
+  if (!list.length) {
+    body.innerHTML = '<tr><td colspan="12" style="text-align:center;color:var(--text-muted);padding:24px">No students match filters.</td></tr>';
+    return;
+  }
+  body.innerHTML = list.map(s => {
+    const fee = effectiveFee(s), bal = fee - s.paid, cleared = bal <= 0;
+    const badge = cleared
+      ? '<span class="badge badge-green">Cleared</span>'
+      : (s.paid > 0
+          ? `<span class="badge badge-amber">Partial (${fmtUGX(bal)})</span>`
+          : `<span class="badge badge-red">Unpaid (${fmtUGX(bal)})</span>`);
+    const sport = s.sport ? `${escapeHtml(s.sport)}<br>${skillBadge(s.skillLevel)}` : '<span style="color:var(--text-muted)">—</span>';
+    const delBtn = can('canDeleteStudents') ? `<button onclick="deleteStudent('${s.id}')" class="btn btn-danger btn-sm">Del</button>` : '';
+    const bursaryTag = s.bursaryPct > 0 ? `<br><span style="font-size:10px;color:#d97706">-${s.bursaryPct}% bursary</span>` : '';
+    const genderIcon = s.gender === 'Female' ? '♀' : s.gender === 'Male' ? '♂' : '—';
+    const genderColor = s.gender === 'Female' ? '#ec4899' : s.gender === 'Male' ? '#3b82f6' : 'var(--text-muted)';
+    const boardBadge = s.boardingStatus === 'Boarding' ? '<span class="badge badge-purple" style="font-size:9px">Boarding</span>' :
+                       s.boardingStatus === 'Weekly' ? '<span class="badge badge-sky" style="font-size:9px">Weekly</span>' :
+                       '<span class="badge badge-slate" style="font-size:9px">Day</span>';
+    const senTag = s.senFlag ? `<br><span style="font-size:9px;color:#7c3aed">SEN: ${escapeHtml(s.senFlag)}</span>` : '';
+    return `<tr>
+      <td class="mono" style="font-size:11px;color:var(--text-muted)">${s.id}${s.unebIndexNo ? '<br><span style="font-size:9px;color:#0369a1">'+escapeHtml(s.unebIndexNo)+'</span>' : ''}</td>
+      <td style="font-weight:600">${escapeHtml(s.name)}${senTag}</td>
+      <td>${escapeHtml(s.class)}${s.combination ? '<br><span style="font-size:10px;color:var(--text-muted)">'+escapeHtml(s.combination)+'</span>' : ''}</td>
+      <td><span style="font-size:11px">${escapeHtml(s.level)}</span></td>
+      <td style="text-align:center;font-size:18px;color:${genderColor}" title="${escapeHtml(s.gender||'—')}">${genderIcon}</td>
+      <td>${boardBadge}</td>
+      <td>${escapeHtml(s.guardian)}</td>
+      <td>${sport}</td>
+      <td style="text-align:right">${fmtUGX(fee)}${bursaryTag}</td>
+      <td style="text-align:right;color:#059669;font-weight:600">${fmtUGX(s.paid)}</td>
+      <td>${badge}</td>
+      <td style="white-space:nowrap">
+        <button onclick="openReportCard('${s.id}')" class="btn btn-ghost btn-sm">Report</button>
+        <button onclick="printFeeReceipt('${s.id}')" class="btn btn-ghost btn-sm" title="Print fee receipt">🧾</button>
+        <button onclick="smsBalance('${s.id}')" class="btn btn-warn btn-sm" title="SMS reminder">📲</button>
+        <button onclick="whatsappBalance('${s.id}')" class="btn btn-accent btn-sm" title="WhatsApp reminder">💬</button>
+        <button onclick="openNotes('${s.id}')" class="btn btn-ghost btn-sm">Notes</button>
+        ${delBtn}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderPaymentsTable() {
+  const body = document.getElementById('paymentsTableBody');
+  const recentBody = document.getElementById('recentPaymentsBody');
+  const sorted = [...state.payments].sort((a, b) => b.date.localeCompare(a.date));
+  if (!sorted.length) {
+    body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px">No payments recorded.</td></tr>';
+    if (recentBody) recentBody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:16px">No payments yet.</td></tr>';
+    return;
+  }
+  body.innerHTML = sorted.map(p => {
+    const s = state.students.find(x => x.id === p.studentId);
+    return `<tr>
+      <td>${p.date}</td>
+      <td class="mono" style="font-size:11px;color:var(--text-muted)">${p.studentId}</td>
+      <td style="font-weight:600">${s ? escapeHtml(s.name) : '<em style="color:var(--text-muted)">(deleted)</em>'}</td>
+      <td>${s ? escapeHtml(s.class) : '—'}</td>
+      <td style="text-align:right;color:#059669;font-weight:600">${fmtUGX(p.amount)}</td>
+    </tr>`;
+  }).join('');
+  if (recentBody) {
+    recentBody.innerHTML = sorted.slice(0, 5).map(p => {
+      const s = state.students.find(x => x.id === p.studentId);
+      return `<tr>
+        <td style="font-size:12px">${p.date}</td>
+        <td style="font-size:12px">${s ? escapeHtml(s.name) : '—'}</td>
+        <td style="text-align:right;color:#059669;font-weight:600;font-size:12px">${fmtUGX(p.amount)}</td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+function renderPrograms() {
+  const grid = document.getElementById('programsGrid');
+  if (!state.programs.length) {
+    grid.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;grid-column:1/-1">No programs yet.</div>';
+    return;
+  }
+  grid.innerHTML = state.programs.map(p => {
+    const enrolled = state.students.filter(s => (s.sport||'').toLowerCase() === (p.sport||'').toLowerCase()).length;
+    const dayChips = (p.days||[]).map(d => `<span class="badge badge-sky" style="font-size:10px">${escapeHtml(d)}</span>`).join(' ') || '<span style="color:var(--text-muted);font-size:11px">No schedule</span>';
+    const reqs = (p.requirements||[]).length
+      ? '<ul style="margin:6px 0 0 16px;font-size:11px;color:var(--text-muted)">' + p.requirements.map(r => `<li>${escapeHtml(r)}</li>`).join('') + '</ul>'
+      : '<p style="font-size:11px;color:var(--text-muted);margin-top:6px">No requirements listed</p>';
+    const delBtn = can('canAddProgram') ? `<button onclick="deleteProgram('${p.id}')" style="background:none;border:none;cursor:pointer;color:#dc2626;font-size:18px;line-height:1">&times;</button>` : '';
+    return `
+      <div style="border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between">
+          <div>
+            <div style="font-weight:700;font-size:14px">${escapeHtml(p.name)}</div>
+            <div style="font-size:11px;color:var(--text-muted)">${escapeHtml(p.sport)} · Coach ${escapeHtml(p.coach)}</div>
+          </div>
+          ${delBtn}
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">${dayChips}</div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted)">Requirements</div>
+        ${reqs}
+        <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:8px;margin-top:4px;font-size:12px">
+          <span style="color:var(--text-muted)">Enrolled</span>
+          <span style="font-weight:700;color:#7c3aed">${enrolled}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderPerformanceTable() {
+  const filter = (document.getElementById('sportFilter').value || '').toLowerCase();
+  const body = document.getElementById('performanceTableBody');
+  const list = state.students.filter(s => s.sport && (!filter || (s.sport||'').toLowerCase() === filter));
+  if (!list.length) {
+    body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">No athletes found.</td></tr>';
+    return;
+  }
+  body.innerHTML = list.map(s => {
+    const notes = s.performanceNotes || [];
+    const latest = notes[notes.length - 1];
+    const latestText = latest
+      ? `<div style="font-size:10px;color:var(--text-muted)">${latest.date}</div><div style="font-size:12px">${escapeHtml(latest.note)}</div>`
+      : '<span style="color:var(--text-muted);font-size:12px">No evaluations yet</span>';
+    return `<tr>
+      <td style="font-weight:600">${escapeHtml(s.name)}</td>
+      <td>${escapeHtml(s.class)}</td>
+      <td>${escapeHtml(s.sport)}</td>
+      <td>${skillBadge(s.skillLevel)}</td>
+      <td style="max-width:240px">${latestText}</td>
+      <td><button onclick="openNotes('${s.id}')" class="btn btn-ghost btn-sm">View (${notes.length})</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderAcademicTable() {
+  const levelF = document.getElementById('academicLevelFilter').value;
+  const body = document.getElementById('academicTableBody');
+  const list = state.students.filter(s => (!levelF || s.level === levelF) && (s.academics||[]).length);
+  if (!list.length) {
+    body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:24px">No academic records.</td></tr>';
+    return;
+  }
+  body.innerHTML = list.map(s => {
+    const sum = studentAcademicSummary(s);
+    return `<tr>
+      <td style="font-weight:600">${escapeHtml(s.name)}</td>
+      <td>${escapeHtml(s.class)}</td>
+      <td style="font-size:11px">${escapeHtml(s.level)}</td>
+      <td style="text-align:center">${sum.count}</td>
+      <td style="text-align:center;font-weight:700">${sum.avg}%</td>
+      <td style="text-align:center;color:#0369a1;font-weight:700">${sum.summary}</td>
+      <td><button onclick="openAcademic('${s.id}')" class="btn btn-ghost btn-sm">Details</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderAttendanceProgramSelect() {
+  const sel = document.getElementById('attendanceProgram');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">-- choose --</option>' + state.programs.map(p =>
+    `<option value="${p.id}">${escapeHtml(p.name)} (${escapeHtml(p.sport)})</option>`
+  ).join('');
+  if (cur) sel.value = cur;
+}
+
+function renderAttendanceRoster() {
+  const roster = document.getElementById('attendanceRoster');
+  const programId = document.getElementById('attendanceProgram').value;
+  const date = document.getElementById('attendanceDate').value;
+  if (!programId) {
+    roster.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:24px;font-size:13px">Select a program to load athletes.</div>';
+    return;
+  }
+  const program = state.programs.find(p => p.id === programId);
+  const athletes = state.students.filter(s => (s.sport||'').toLowerCase() === (program.sport||'').toLowerCase());
+  if (!athletes.length) {
+    roster.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:24px;font-size:13px">No athletes enrolled for this sport.</div>';
+    return;
+  }
+  const existing = state.attendance.find(a => a.programId === programId && a.date === date);
+  const presentMap = {};
+  if (existing) existing.records.forEach(r => { presentMap[r.studentId] = r.present; });
+
+  roster.innerHTML = athletes.map(s => {
+    const isPresent = presentMap[s.id] !== false;
+    return `<label style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer">
+      <div>
+        <div style="font-weight:600;font-size:13px">${escapeHtml(s.name)}</div>
+        <div style="font-size:11px;color:var(--text-muted)">${escapeHtml(s.class)} · ${escapeHtml(s.level)}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:11px;font-weight:700;color:${isPresent?'#059669':'#94a3b8'}" data-label="${s.id}">${isPresent?'Present':'Absent'}</span>
+        <input type="checkbox" data-student="${s.id}" ${isPresent?'checked':''} class="att-toggle" style="width:18px;height:18px;accent-color:var(--accent)" />
+      </div>
+    </label>`;
+  }).join('');
+
+  roster.querySelectorAll('.att-toggle').forEach(cb => {
+    cb.addEventListener('change', e => {
+      const id = e.target.dataset.student;
+      const lbl = roster.querySelector(`[data-label="${id}"]`);
+      lbl.textContent = e.target.checked ? 'Present' : 'Absent';
+      lbl.style.color = e.target.checked ? '#059669' : '#94a3b8';
+    });
+  });
+}
+
+function renderAttendanceTable() {
+  const body = document.getElementById('attendanceTableBody');
+  const athletes = state.students.filter(s => s.sport);
+  if (!athletes.length || !state.attendance.length) {
+    body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px">No sessions recorded.</td></tr>';
+    return;
+  }
+  body.innerHTML = athletes.map(s => {
+    const att = studentAttendance(s.id);
+    const color = att.rate >= 75 ? '#059669' : att.rate >= 50 ? '#d97706' : '#dc2626';
+    return `<tr>
+      <td style="font-weight:600">${escapeHtml(s.name)}</td>
+      <td>${escapeHtml(s.sport)}</td>
+      <td style="text-align:center">${att.total}</td>
+      <td style="text-align:center">${att.present}</td>
+      <td style="text-align:center;font-weight:700;color:${color}">${att.rate}%</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderBursaryTable() {
+  const body = document.getElementById('bursaryTableBody');
+  const athletes = state.students.filter(s => s.sport);
+  if (!athletes.length) {
+    body.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:24px">No athletes registered.</td></tr>';
+    return;
+  }
+  const ranked = athletes.map(s => ({ s, score: bursaryScore(s), att: studentAttendance(s.id) })).sort((a,b) => b.score - a.score);
+  body.innerHTML = ranked.map(({ s, score, att }) => {
+    const eligible = score >= 70;
+    const badge = eligible
+      ? '<span class="badge badge-green">Eligible</span>'
+      : '<span class="badge badge-slate">Below threshold</span>';
+    const awardBtn = can('canAwardBursary')
+      ? `<button onclick="setBursary('${s.id}')" class="btn btn-warn btn-sm">Award %</button>`
+      : (s.bursaryPct > 0 ? `<span style="color:#d97706;font-weight:700">${s.bursaryPct}%</span>` : '—');
+    return `<tr>
+      <td style="font-weight:600">${escapeHtml(s.name)}</td>
+      <td style="font-size:11px">${escapeHtml(s.class)} · ${escapeHtml(s.level)}</td>
+      <td>${escapeHtml(s.sport)} · ${skillBadge(s.skillLevel)}</td>
+      <td style="text-align:center">${att.rate}% <span style="font-size:10px;color:var(--text-muted)">(${att.present}/${att.total})</span></td>
+      <td style="text-align:center">${(s.performanceNotes||[]).length}</td>
+      <td style="text-align:center">
+        <div style="font-size:20px;font-weight:700;color:${eligible?'#059669':'#94a3b8'}">${score}</div>
+        ${badge}
+      </td>
+      <td style="text-align:center">${s.bursaryPct > 0 ? `<span style="font-weight:700;color:#d97706">-${s.bursaryPct}%</span>` : '—'}</td>
+      <td style="text-align:center">${awardBtn}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderConductTable() {
+  const filter = document.getElementById('conductFilter').value;
+  const body = document.getElementById('conductTableBody');
+  const list = [...state.conduct].filter(c => !filter || c.severity === filter).sort((a,b) => b.date.localeCompare(a.date));
+  if (!list.length) {
+    body.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:24px">No entries match.</td></tr>';
+    return;
+  }
+  const sevBadge = { Positive:'badge-green', Minor:'badge-sky', Major:'badge-amber', Severe:'badge-red' };
+  body.innerHTML = list.map(c => {
+    const s = state.students.find(x => x.id === c.studentId);
+    const delBtn = can('canDeleteConduct') ? `<button onclick="deleteConduct('${c.id}')" class="btn btn-danger btn-sm">×</button>` : '';
+    return `<tr>
+      <td style="font-size:11px;color:var(--text-muted)">${c.date}</td>
+      <td style="font-weight:600">${s ? escapeHtml(s.name) : '<em style="color:var(--text-muted)">(deleted)</em>'}</td>
+      <td style="font-size:11px">${s ? escapeHtml(s.class) : '—'}</td>
+      <td>${escapeHtml(c.type)}</td>
+      <td><span class="badge ${sevBadge[c.severity]||'badge-slate'}">${escapeHtml(c.severity)}</span></td>
+      <td style="max-width:220px;font-size:12px">${escapeHtml(c.description)}</td>
+      <td style="font-size:11px;color:var(--text-muted)">${escapeHtml(c.reportedBy)}</td>
+      <td style="white-space:nowrap">
+        ${s ? `<button onclick="smsConduct('${c.id}')" class="btn btn-warn btn-sm">📲</button> ` : ''}
+        ${delBtn}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderStatisticalReports() {
+  const levels = ['Pre-Primary','Primary','O Level','A Level','Other'];
+  document.getElementById('levelStats').innerHTML = levels.map(l => {
+    const cnt = state.students.filter(s => s.level === l).length;
+    const col = state.students.filter(s => s.level === l).reduce((a,s) => a+s.paid, 0);
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;border-left:3px solid #0ea5e9">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted)">${l}</div>
+      <div style="font-size:22px;font-weight:500;font-family:'DM Mono',monospace;margin:4px 0">${cnt}</div>
+      <div style="font-size:11px;color:#059669">${fmtUGX(col)}</div>
+    </div>`;
+  }).join('');
+
+  const classMap = {};
+  state.students.forEach(s => { if (!classMap[s.class]) classMap[s.class]=[]; classMap[s.class].push(s); });
+  const rows = Object.keys(classMap).sort();
+  document.getElementById('classStatsBody').innerHTML = rows.length ? rows.map(k => {
+    const list = classMap[k];
+    const avgScores = list.map(s => studentAcademicSummary(s).avg).filter(v => v > 0);
+    const avg = avgScores.length ? Math.round(avgScores.reduce((a,b)=>a+b,0)/avgScores.length) : 0;
+    const cleared = list.filter(s => s.paid >= effectiveFee(s)).length;
+    const outstanding = list.reduce((a,s) => a + Math.max(0, effectiveFee(s)-s.paid), 0);
+    return `<tr>
+      <td style="font-weight:600">${escapeHtml(k)}</td>
+      <td style="font-size:11px">${escapeHtml(list[0].level)}</td>
+      <td style="text-align:center">${list.length}</td>
+      <td style="text-align:center">${avg?avg+'%':'—'}</td>
+      <td style="text-align:center;color:#059669">${cleared}/${list.length}</td>
+      <td style="text-align:center;color:#dc2626">${fmtUGX(outstanding)}</td>
+      <td style="text-align:center;color:#7c3aed">${list.filter(s=>s.sport).length}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:24px">No data.</td></tr>';
+
+  const sportCounts = {};
+  state.students.forEach(s => { if (s.sport) sportCounts[s.sport] = (sportCounts[s.sport]||0)+1; });
+  const sportEntries = Object.entries(sportCounts).sort((a,b)=>b[1]-a[1]);
+  const sm = Math.max(1, ...sportEntries.map(e=>e[1]));
+  document.getElementById('sportStats').innerHTML = sportEntries.length
+    ? sportEntries.map(([sport,n]) => `
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+          <span style="font-weight:600">${escapeHtml(sport)}</span><span>${n}</span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" style="background:#7c3aed;width:${(n/sm)*100}%"></div></div>
+      </div>`)
+      .join('')
+    : '<p style="font-size:13px;color:var(--text-muted)">No sports data.</p>';
+
+  const total = state.students.reduce((a,s)=>a+effectiveFee(s),0);
+  const paid = state.students.reduce((a,s)=>a+s.paid,0);
+  const bursaryGranted = state.students.reduce((a,s)=>a+(s.fee-effectiveFee(s)),0);
+  const rate = total ? Math.round(paid*100/total) : 0;
+  document.getElementById('financeStats').innerHTML = [
+    ['Expected (after bursaries)', fmtUGX(total), ''],
+    ['Collected', fmtUGX(paid), 'color:#059669'],
+    ['Outstanding', fmtUGX(total-paid), 'color:#dc2626'],
+    ['Bursary granted', fmtUGX(bursaryGranted), 'color:#d97706'],
+  ].map(([label,val,style]) => `
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
+      <span style="color:var(--text-muted)">${label}</span>
+      <span style="font-weight:700;${style}">${val}</span>
+    </div>`).join('') +
+    `<div style="display:flex;justify-content:space-between;padding:8px 0;font-weight:700">
+      <span>Collection Rate</span>
+      <span style="color:${rate>=75?'#059669':rate>=50?'#d97706':'#dc2626'}">${rate}%</span>
+    </div>`;
+
+  // New enhanced stats
+  renderGenderBoardingSenStats();
+  renderEMISPreview();
+}
+
+function renderSportFilter() {
+  const sel = document.getElementById('sportFilter'), cur = sel.value;
+  const sports = Array.from(new Set([...state.programs.map(p=>p.sport), ...state.students.map(s=>s.sport).filter(Boolean)])).sort();
+  sel.innerHTML = '<option value="">All Sports</option>' + sports.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+  if (cur) sel.value = cur;
+}
+function renderSportOptions() {
+  const sel = document.querySelector('#registerForm select[name="sport"]');
+  if (!sel) return;
+  const cur = sel.value;
+  const sports = Array.from(new Set([...SPORT_OPTIONS, ...state.programs.map(p=>p.sport)])).sort();
+  sel.innerHTML = '<option value="">— None —</option>' + sports.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+  if (cur) sel.value = cur;
+}
+function renderSubjectList() {
+  const dl = document.getElementById('subjectList');
+  const set = new Set([...PRIMARY_SUBJECTS, ...O_LEVEL_SUBJECTS, ...A_LEVEL_SUBJECTS]);
+  dl.innerHTML = Array.from(set).sort().map(s => `<option value="${escapeHtml(s)}">`).join('');
+}
+function renderStudentSelects() {
+  const fill = (selId, label) => {
+    const sel = document.getElementById(selId); if (!sel) return;
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">-- choose --</option>' + state.students.map(s =>
+      `<option value="${s.id}">${escapeHtml(s.name)} — ${escapeHtml(s.class)}${label(s)}</option>`
+    ).join('');
+    if (cur) sel.value = cur;
+  };
+  fill('studentSelect', s => ` (Balance: ${fmtUGX(studentBalance(s))})`);
+  fill('perfStudentSelect', s => s.sport ? ' · ' + escapeHtml(s.sport) : '');
+  fill('academicStudentSelect', s => ' · ' + escapeHtml(s.level));
+  fill('conductStudentSelect', s => ' · ' + escapeHtml(s.class));
+  updateBalancePreview();
+}
+function updateBalancePreview() {
+  const sel = document.getElementById('studentSelect');
+  const preview = document.getElementById('balancePreview');
+  if (!sel || !preview) return;
+  const s = state.students.find(x => x.id === sel.value);
+  if (!s) { preview.style.display = 'none'; return; }
+  const fee = effectiveFee(s), bal = studentBalance(s);
+  preview.style.display = 'block';
+  preview.innerHTML = `<strong>${escapeHtml(s.name)}</strong> · ${escapeHtml(s.class)}<br>
+    Fee: ${fmtUGX(fee)}${s.bursaryPct>0?` <span style="color:#d97706">(-${s.bursaryPct}%)</span>`:''} · Paid: ${fmtUGX(s.paid)} ·
+    <span style="font-weight:700;color:${bal<=0?'#059669':'#dc2626'}">Balance: ${fmtUGX(bal)}</span>`;
+}
+
+/* ─── User Management (exec only) ──────────────────────────────────────── */
+
+/* ─── Modals ─────────────────────────────────────────────────────────────── */
+function openGenericModal(title, body) {
+  document.getElementById('genericModalTitle').textContent = title;
+  document.getElementById('genericModalBody').innerHTML = body;
+  document.getElementById('genericModal').classList.remove('hidden');
+}
+function closeGenericModal() { document.getElementById('genericModal').classList.add('hidden'); }
+
+function openNotes(studentId) {
+  const s = state.students.find(x => x.id === studentId); if (!s) return;
+  const notes = (s.performanceNotes||[]).slice().reverse();
+  const att = studentAttendance(s.id);
+  openGenericModal(s.name + ' — Performance History', `
+    <div style="background:var(--surface);border-radius:8px;padding:12px;font-size:13px;margin-bottom:12px">
+      <div><strong>Sport:</strong> ${escapeHtml(s.sport||'—')}</div>
+      <div style="margin-top:4px"><strong>Skill:</strong> ${skillBadge(s.skillLevel)}</div>
+      <div style="margin-top:4px"><strong>Attendance:</strong> ${att.rate}% (${att.present}/${att.total})</div>
+      <div style="margin-top:4px"><strong>Bursary Score:</strong> ${bursaryScore(s)}/100 ${bursaryEligible(s)?'<span style="color:#059669;font-weight:700">· Eligible</span>':''}</div>
+    </div>
+    ${notes.length ? notes.map(n => `
+      <div style="border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:11px;color:var(--text-muted)">${n.date}</span>
+          ${skillBadge(n.skillLevel)}
+        </div>
+        <div style="font-size:13px">${escapeHtml(n.note)}</div>
+      </div>`).join('')
+    : '<p style="text-align:center;color:var(--text-muted);font-size:13px;padding:16px 0">No evaluations yet.</p>'}
+  `);
+}
+
+function openAcademic(studentId) {
+  const s = state.students.find(x => x.id === studentId); if (!s) return;
+  const sum = studentAcademicSummary(s);
+  const rows = (s.academics||[]).slice().reverse().map(a =>
+    `<tr>
+      <td style="font-size:12px">${a.date}</td>
+      <td>${escapeHtml(a.term)}</td>
+      <td style="font-weight:600">${escapeHtml(a.subject)}</td>
+      <td style="text-align:center">${a.score}%</td>
+      <td style="text-align:center;font-weight:700;color:#0369a1">${escapeHtml(a.grade)}</td>
+    </tr>`).join('');
+  openGenericModal(s.name + ' — Academic Record', `
+    <div style="background:var(--surface);border-radius:8px;padding:12px;font-size:13px;margin-bottom:12px">
+      <strong>${escapeHtml(s.class)}</strong> · ${escapeHtml(s.level)} · ${sum.count} subjects · Avg ${sum.avg}% · <strong style="color:#0369a1">${sum.summary}</strong>
+    </div>
+    ${rows ? `<table><thead><tr><th>Date</th><th>Term</th><th>Subject</th><th>Score</th><th>Grade</th></tr></thead><tbody>${rows}</tbody></table>`
+    : '<p style="text-align:center;color:var(--text-muted);padding:16px">No scores yet.</p>'}
+  `);
+}
+
+/* ─── Report Card ──────────────────────────────────────────────────────── */
+function openReportCard(studentId) {
+  const s = state.students.find(x => x.id === studentId); if (!s) return;
+  const sum = studentAcademicSummary(s);
+  const att = studentAttendance(s.id);
+  const fee = effectiveFee(s), bal = Math.max(0, fee - s.paid);
+  const notes = (s.performanceNotes||[]).slice(-3).reverse();
+  const academicRows = (s.academics||[]).map(a =>
+    `<tr><td style="border:1px solid #cbd5e1;padding:4px">${escapeHtml(a.term)}</td>
+     <td style="border:1px solid #cbd5e1;padding:4px">${escapeHtml(a.subject)}</td>
+     <td style="border:1px solid #cbd5e1;padding:4px;text-align:center">${a.score}%</td>
+     <td style="border:1px solid #cbd5e1;padding:4px;text-align:center;font-weight:bold">${escapeHtml(a.grade)}</td></tr>`
+  ).join('') || '<tr><td colspan="4" style="border:1px solid #cbd5e1;padding:8px;text-align:center;color:#94a3b8">No scores</td></tr>';
+  const paymentRows = state.payments.filter(p=>p.studentId===s.id).slice(-5).map(p =>
+    `<tr><td style="border:1px solid #cbd5e1;padding:3px">${p.date}</td>
+     <td style="border:1px solid #cbd5e1;padding:3px;text-align:right">${fmtUGX(p.amount)}</td></tr>`
+  ).join('') || '<tr><td colspan="2" style="border:1px solid #cbd5e1;padding:8px;text-align:center;color:#94a3b8">No payments</td></tr>';
+  const conductItems = state.conduct.filter(c=>c.studentId===s.id).slice(-5).reverse();
+  const conductHtml = conductItems.length
+    ? '<ul style="font-size:12px;margin:4px 0 0 0;padding-left:18px">' + conductItems.map(c =>
+        `<li><strong>${escapeHtml(c.date)} · ${escapeHtml(c.type)} (${escapeHtml(c.severity)}):</strong> ${escapeHtml(c.description)} — <em>${escapeHtml(c.reportedBy)}</em></li>`
+      ).join('') + '</ul>'
+    : '<p style="font-size:12px;color:#94a3b8;margin:2px 0">No conduct entries.</p>';
+
+  document.getElementById('printArea').innerHTML = `
+  <div style="background:#fff;font-family:'DM Sans',sans-serif;max-width:800px;margin:0 auto;padding:24px">
+    <div style="text-align:center;border-bottom:3px double #1e293b;padding-bottom:10px;margin-bottom:14px">
+      <h1 style="font-size:22px;font-weight:900;color:#1e293b;font-family:'Playfair Display',serif">KAMPALA SCHOOL & ACADEMY</h1>
+      <p style="font-size:11px;color:#64748b">Kampala, Uganda · Termly Student Report Card</p>
+    </div>
+    <table style="width:100%;font-size:12px;margin-bottom:14px">
+      <tr><td style="padding:2px 6px"><strong>Student:</strong> ${escapeHtml(s.name)}</td><td><strong>ID:</strong> ${s.id}</td></tr>
+      <tr><td style="padding:2px 6px"><strong>Class:</strong> ${escapeHtml(s.class)} ${s.combination?'('+escapeHtml(s.combination)+')':''}</td><td><strong>Level:</strong> ${escapeHtml(s.level)}</td></tr>
+      <tr><td style="padding:2px 6px"><strong>Guardian:</strong> ${escapeHtml(s.guardian)}</td><td><strong>Date:</strong> ${todayISO()}</td></tr>
+    </table>
+    <h2 style="font-size:13px;background:#1e293b;color:#fff;padding:5px 10px;margin:10px 0 5px">ACADEMIC PERFORMANCE</h2>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px">
+      <thead style="background:#f1f5f9"><tr>
+        <th style="border:1px solid #cbd5e1;padding:4px">Term</th>
+        <th style="border:1px solid #cbd5e1;padding:4px">Subject</th>
+        <th style="border:1px solid #cbd5e1;padding:4px">Score</th>
+        <th style="border:1px solid #cbd5e1;padding:4px">Grade</th>
+      </tr></thead>
+      <tbody>${academicRows}</tbody>
+    </table>
+    <p style="font-size:12px;margin:4px 0"><strong>Subjects:</strong> ${sum.count} · <strong>Average:</strong> ${sum.avg}% · <strong>Result:</strong> ${sum.summary}</p>
+    <h2 style="font-size:13px;background:#1e293b;color:#fff;padding:5px 10px;margin:10px 0 5px">SPORTS & CO-CURRICULAR</h2>
+    <p style="font-size:12px;margin:2px 0"><strong>Sport:</strong> ${escapeHtml(s.sport||'—')} · <strong>Skill:</strong> ${escapeHtml(s.skillLevel||'—')}</p>
+    <p style="font-size:12px;margin:2px 0"><strong>Attendance:</strong> ${att.rate}% (${att.present}/${att.total} sessions)</p>
+    <p style="font-size:12px;margin:2px 0"><strong>Bursary Score:</strong> ${bursaryScore(s)}/100${bursaryEligible(s)?' — ELIGIBLE':''}${s.bursaryPct>0?' · Awarded '+s.bursaryPct+'%':''}</p>
+    ${notes.length ? notes.map(n => `<div style="border-left:2px solid #818cf8;padding:4px 8px;margin:4px 0;font-size:12px"><em>${n.date}:</em> ${escapeHtml(n.note)}</div>`).join('') : ''}
+    <h2 style="font-size:13px;background:#1e293b;color:#fff;padding:5px 10px;margin:10px 0 5px">DISCIPLINE & CONDUCT</h2>
+    ${conductHtml}
+    <h2 style="font-size:13px;background:#1e293b;color:#fff;padding:5px 10px;margin:10px 0 5px">FEES STATEMENT</h2>
+    <table style="width:100%;font-size:12px;margin-bottom:6px">
+      <tr><td><strong>Termly Fee:</strong></td><td>${fmtUGX(s.fee)}</td><td><strong>After Bursary:</strong></td><td>${fmtUGX(fee)}</td></tr>
+      <tr><td><strong>Paid:</strong></td><td style="color:#047857">${fmtUGX(s.paid)}</td><td><strong>Balance:</strong></td><td style="color:#b91c1c;font-weight:700">${fmtUGX(bal)}</td></tr>
+    </table>
+    <table style="width:100%;border-collapse:collapse;font-size:11px">
+      <thead style="background:#f1f5f9"><tr>
+        <th style="border:1px solid #cbd5e1;padding:3px;text-align:left">Date</th>
+        <th style="border:1px solid #cbd5e1;padding:3px;text-align:right">Amount</th>
+      </tr></thead>
+      <tbody>${paymentRows}</tbody>
+    </table>
+    <div style="margin-top:28px;display:flex;justify-content:space-between;font-size:11px">
+      <div>___________________<br>Class Teacher</div>
+      <div>___________________<br>Head Coach</div>
+      <div>___________________<br>Head Teacher</div>
+    </div>
+    <p style="text-align:center;font-size:10px;color:#94a3b8;margin-top:16px">Generated ${new Date().toLocaleString()} · Kampala School Portal</p>
+  </div>`;
+  document.getElementById('printArea').style.display = 'block';
+  window.print();
+  document.getElementById('printArea').style.display = 'none';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   AUTH FLOW
+═══════════════════════════════════════════════════════════ */
+function quickFill(role) {
+  const defaults = { exec:'exec', admin:'admin', bursary:'bursary', coach:'coach' };
+  document.getElementById('loginUsername').value = role;
+  document.getElementById('loginPassword').value = role.charAt(0).toUpperCase() + role.slice(1) + '@2026';
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('authError');
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  err.style.display = 'none';
+
+  const username = document.getElementById('loginUsername').value;
+  const password = document.getElementById('loginPassword').value;
+  const result = await AUTH.login(username, password);
+
+  btn.disabled = false; btn.textContent = 'Sign In →';
+
+  if (!result.ok) {
+    err.style.display = 'block';
+    err.textContent = result.error;
+    return;
+  }
+
+  currentSession = result.session;
+  initApp();
+
+  if (result.mustChangePassword) {
+    document.getElementById('changePwdModal').classList.remove('hidden');
+  }
+}
+
+function handleLogout() {
+  if (!confirm('Sign out?')) return;
+  AUTH.logout();
+  currentSession = null;
+  document.getElementById('appShell').classList.remove('visible');
+  document.getElementById('authScreen').style.display = 'flex';
+  document.getElementById('loginPassword').value = '';
+}
+
+/* ─── Change Password ──────────────────────────────────────────────────── */
+function openChangePwd() {
+  document.getElementById('changePwdModal').classList.remove('hidden');
+}
+async function submitChangePassword() {
+  const cur = document.getElementById('cpCurrent').value;
+  const nw = document.getElementById('cpNew').value;
+  const conf = document.getElementById('cpConfirm').value;
+  const err = document.getElementById('changePwdError');
+  err.style.display = 'none';
+
+  if (nw !== conf) { err.style.display = 'block'; err.textContent = 'New passwords do not match.'; return; }
+  const result = await AUTH.changePassword(cur, nw);
+  if (!result.ok) { err.style.display = 'block'; err.textContent = result.error; return; }
+
+  toast('Password updated successfully', 'success');
+  document.getElementById('changePwdModal').classList.add('hidden');
+  document.getElementById('cpCurrent').value = '';
+  document.getElementById('cpNew').value = '';
+  document.getElementById('cpConfirm').value = '';
+}
+function skipPasswordChange() {
+  document.getElementById('changePwdModal').classList.add('hidden');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   APP INITIALIZATION
+═══════════════════════════════════════════════════════════ */
+function initApp() {
+  const session = AUTH.getSession();
+  if (!session) return;
+  currentSession = session;
+  const perms = AUTH.getPermissions(session.role);
+
+  // Hide auth, show app
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('appShell').classList.add('visible');
+
+  // Header
+  document.getElementById('headerRoleBadge').textContent = perms.badge;
+  document.getElementById('headerRoleBadge').style.color = perms.color;
+  document.getElementById('headerRoleBadge').style.borderColor = perms.color;
+  document.getElementById('headerUserName').textContent = session.displayName;
+  document.getElementById('headerUserRole').textContent = perms.label;
+  document.documentElement.style.setProperty('--role-color', perms.color);
+
+  // Show/hide header buttons
+  document.getElementById('exportBtn').style.display = can('canExport') ? '' : 'none';
+  document.getElementById('importLabel').style.display = can('canImport') ? '' : 'none';
+  if (document.getElementById('adminImportLabel'))
+    document.getElementById('adminImportLabel').style.display = can('canImport') ? '' : 'none';
+
+  // Navigation
+  buildNav(perms.tabs);
+
+  // Show/hide admin sub-cards
+  if (document.getElementById('regStudentCard'))
+    document.getElementById('regStudentCard').style.display = can('canRegisterStudent') ? '' : 'none';
+  if (document.getElementById('recPaymentCard'))
+    document.getElementById('recPaymentCard').style.display = can('canRecordPayment') ? '' : 'none';
+  if (document.getElementById('addProgramCard'))
+    document.getElementById('addProgramCard').style.display = can('canAddProgram') ? '' : 'none';
+  if (document.getElementById('resetBtn'))
+    document.getElementById('resetBtn').style.display = can('canReset') ? '' : 'none';
+  if (document.getElementById('userMgmtCard'))
+    document.getElementById('userMgmtCard').style.display = can('canManageUsers') ? '' : 'none';
+  if (document.getElementById('auditLogCard'))
+    document.getElementById('auditLogCard').style.display = can('canManageUsers') ? '' : 'none';
+
+  // Hide form cards for read-only roles
+  if (document.getElementById('conductFormCard'))
+    document.getElementById('conductFormCard').style.display = can('canLogConduct') ? '' : 'none';
+  if (document.getElementById('academicFormCard'))
+    document.getElementById('academicFormCard').style.display = can('canAddAcademic') ? '' : 'none';
+  if (document.getElementById('logPerfCard'))
+    document.getElementById('logPerfCard').style.display = can('canLogPerformance') ? '' : 'none';
+
+  loadState();
+  setupBindings();
+  renderAll();
+  startSessionTimer();
+
+  if (document.getElementById('termMgmtCard'))
+    document.getElementById('termMgmtCard').style.display = can('canManageTerms') ? '' : 'none';
+  if (document.getElementById('feeCompCard'))
+    document.getElementById('feeCompCard').style.display = can('canManageTerms') ? '' : 'none';
+
+  // Wire user edit form (exec only)
+  const uef = document.getElementById('userEditForm');
+  if (uef) uef.addEventListener('submit', handleUserEditSubmit);
+
+  // Activate default tab
+  switchTab(AUTH.getDefaultTab());
+}
+
+/* ═══════════════════════════════════════════════════════════
+   WHATSAPP & ENHANCED COMMUNICATIONS
+═══════════════════════════════════════════════════════════ */
+function whatsappBalance(studentId) {
+  const s = state.students.find(x => x.id === studentId); if (!s) return;
+  const phone = normalizePhone(s.guardian);
+  if (!phone) return toast('No guardian phone on file', 'error');
+  const fee = effectiveFee(s), bal = Math.max(0, fee - s.paid);
+  const body = bal > 0
+    ? `Dear Parent/Guardian of *${s.name}* (${s.class}), outstanding school fees balance: *${fmtUGX(bal)}* of ${fmtUGX(fee)}. Kindly clear at your earliest convenience. Thank you. — Kampala School & Academy`
+    : `Dear Parent/Guardian of *${s.name}* (${s.class}), thank you for clearing the fees of *${fmtUGX(fee)}* this term. — Kampala School & Academy`;
+  const waPhone = phone.replace('+', '');
+  window.open('https://wa.me/' + waPhone + '?text=' + encodeURIComponent(body), '_blank');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FEE RECEIPT PRINTING
+═══════════════════════════════════════════════════════════ */
+function printFeeReceipt(studentId) {
+  const s = state.students.find(x => x.id === studentId); if (!s) return;
+  const payments = state.payments.filter(p => p.studentId === s.id);
+  const fee = effectiveFee(s);
+  const bal = Math.max(0, fee - s.paid);
+  const receiptNo = 'RCP-' + s.id + '-' + Date.now().toString().slice(-6);
+  const currentTerm = getCurrentTerm();
+  const termLabel = currentTerm ? `${currentTerm.year} ${currentTerm.term}` : 'Current Term';
+
+  // Build component breakdown if components exist
+  const compBreakdown = state.feeComponents.length
+    ? `<table style="width:100%;border-collapse:collapse;font-size:12px;margin:8px 0">
+        <thead style="background:#f1f5f9">
+          <tr><th style="border:1px solid #cbd5e1;padding:4px;text-align:left">Component</th><th style="border:1px solid #cbd5e1;padding:4px;text-align:right">Amount (UGX)</th></tr>
+        </thead>
+        <tbody>
+          ${state.feeComponents.map(c => `<tr><td style="border:1px solid #cbd5e1;padding:4px">${escapeHtml(c.name)}</td><td style="border:1px solid #cbd5e1;padding:4px;text-align:right">${fmtUGX(c.amount)}</td></tr>`).join('')}
+          <tr style="background:#f8fafc;font-weight:700"><td style="border:1px solid #cbd5e1;padding:4px">TOTAL</td><td style="border:1px solid #cbd5e1;padding:4px;text-align:right">${fmtUGX(fee)}</td></tr>
+        </tbody>
+      </table>`
+    : `<p style="font-size:12px"><strong>Total Fees:</strong> ${fmtUGX(fee)}</p>`;
+
+  document.getElementById('printArea').innerHTML = `
+  <div style="background:#fff;font-family:'DM Sans',sans-serif;max-width:600px;margin:0 auto;padding:24px;border:2px solid #1e293b">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+      <div>
+        <h1 style="font-size:20px;font-weight:900;color:#1e293b;font-family:'Playfair Display',serif;margin:0">KAMPALA SCHOOL & ACADEMY</h1>
+        <p style="font-size:11px;color:#64748b;margin:2px 0">Kampala, Uganda | Official Fee Receipt</p>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:#64748b">Receipt No.</div>
+        <div style="font-size:14px;font-weight:700;font-family:monospace">${receiptNo}</div>
+        <div style="font-size:11px;color:#64748b">Date: ${todayISO()}</div>
+      </div>
+    </div>
+    <div style="border-top:2px solid #1e293b;border-bottom:1px solid #cbd5e1;padding:10px 0;margin-bottom:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px">
+        <div><strong>Student Name:</strong> ${escapeHtml(s.name)}</div>
+        <div><strong>Admission No.:</strong> ${s.id}</div>
+        <div><strong>Class:</strong> ${escapeHtml(s.class)}</div>
+        <div><strong>Term:</strong> ${termLabel}</div>
+        <div><strong>Guardian:</strong> ${escapeHtml(s.guardian)}</div>
+        <div><strong>Boarding:</strong> ${escapeHtml(s.boardingStatus || 'Day Scholar')}</div>
+      </div>
+    </div>
+    <h3 style="font-size:13px;font-weight:700;margin:0 0 6px">FEE BREAKDOWN</h3>
+    ${compBreakdown}
+    <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:10px;margin:10px 0;display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px">
+      <div><strong>Total Assessed:</strong> ${fmtUGX(fee)}</div>
+      <div><strong>Amount Paid:</strong> <span style="color:#059669;font-weight:700">${fmtUGX(s.paid)}</span></div>
+      <div><strong>Outstanding Balance:</strong> <span style="color:${bal > 0 ? '#dc2626' : '#059669'};font-weight:700">${fmtUGX(bal)}</span></div>
+      <div><strong>Status:</strong> <strong style="color:${bal <= 0 ? '#059669' : '#dc2626'}">${bal <= 0 ? 'CLEARED ✓' : 'OUTSTANDING'}</strong></div>
+    </div>
+    <h3 style="font-size:13px;font-weight:700;margin:12px 0 6px">PAYMENT HISTORY</h3>
+    <table style="width:100%;border-collapse:collapse;font-size:11px">
+      <thead style="background:#f1f5f9"><tr>
+        <th style="border:1px solid #cbd5e1;padding:4px;text-align:left">Date</th>
+        <th style="border:1px solid #cbd5e1;padding:4px;text-align:right">Amount Paid (UGX)</th>
+        <th style="border:1px solid #cbd5e1;padding:4px;text-align:left">Reference</th>
+      </tr></thead>
+      <tbody>
+        ${payments.length ? payments.map((p,i) => `<tr><td style="border:1px solid #cbd5e1;padding:3px">${p.date}</td><td style="border:1px solid #cbd5e1;padding:3px;text-align:right;font-weight:600">${fmtUGX(p.amount)}</td><td style="border:1px solid #cbd5e1;padding:3px;font-family:monospace;font-size:10px">${p.id}</td></tr>`).join('')
+          : '<tr><td colspan="3" style="border:1px solid #cbd5e1;padding:6px;text-align:center;color:#94a3b8">No payments recorded</td></tr>'}
+      </tbody>
+    </table>
+    <div style="margin-top:28px;display:flex;justify-content:space-between;font-size:11px;border-top:1px solid #cbd5e1;padding-top:16px">
+      <div>______________________<br>Cashier / Bursar</div>
+      <div style="text-align:center">______________________<br>Head Teacher / Principal</div>
+      <div style="text-align:right">______________________<br>School Stamp</div>
+    </div>
+    <p style="text-align:center;font-size:10px;color:#94a3b8;margin-top:12px">This is an official receipt. Keep for your records. Generated: ${new Date().toLocaleString()}</p>
+  </div>`;
+  document.getElementById('printArea').style.display = 'block';
+  window.print();
+  document.getElementById('printArea').style.display = 'none';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TERM MANAGEMENT
+═══════════════════════════════════════════════════════════ */
+function getCurrentTerm() {
+  const active = state.terms.find(t => t.isActive);
+  return active || state.terms[state.terms.length - 1] || null;
+}
+function addTerm(f) {
+  if (!can('canManageTerms')) return toast('Access denied', 'error');
+  const existing = state.terms.find(t => t.year === f.year && t.term === f.term);
+  if (existing) return toast('Term already exists', 'error');
+  // Deactivate all others
+  state.terms.forEach(t => t.isActive = false);
+  state.terms.push({ id: 'TRM' + uid().slice(0,5), year: f.year.trim(), term: f.term, startDate: f.startDate, endDate: f.endDate, isActive: true });
+  saveState(); renderAll();
+  toast(`${f.year} ${f.term} set as current term`, 'success');
+}
+function setActiveTerm(id) {
+  state.terms.forEach(t => t.isActive = (t.id === id));
+  saveState(); renderAll();
+  toast('Active term updated', 'success');
+}
+function deleteTerm(id) {
+  if (!confirm('Remove this term?')) return;
+  state.terms = state.terms.filter(t => t.id !== id);
+  saveState(); renderAll();
+}
+function renderTermsTable() {
+  const body = document.getElementById('termsTableBody'); if (!body) return;
+  const banner = document.getElementById('currentTermBanner'); if (banner) {
+    const ct = getCurrentTerm();
+    if (ct) { banner.style.display = 'block'; banner.textContent = `📅 Current Term: ${ct.year} ${ct.term}${ct.startDate ? ' · ' + ct.startDate + ' → ' + (ct.endDate || '?') : ''}`; }
+    else banner.style.display = 'none';
+  }
+  if (!state.terms.length) { body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:16px">No terms set yet.</td></tr>'; return; }
+  body.innerHTML = [...state.terms].reverse().map(t => `<tr>
+    <td style="font-weight:600">${escapeHtml(t.year)}</td>
+    <td>${escapeHtml(t.term)}</td>
+    <td>${t.startDate || '—'}</td>
+    <td>${t.endDate || '—'}</td>
+    <td>${t.isActive ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-slate">Archived</span>'}</td>
+    <td style="white-space:nowrap">
+      ${!t.isActive ? `<button onclick="setActiveTerm('${t.id}')" class="btn btn-accent btn-sm">Set Active</button> ` : ''}
+      <button onclick="deleteTerm('${t.id}')" class="btn btn-danger btn-sm">×</button>
+    </td>
+  </tr>`).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FEE COMPONENTS
+═══════════════════════════════════════════════════════════ */
+function addFeeComponent(f) {
+  if (!can('canManageTerms')) return toast('Access denied', 'error');
+  if (state.feeComponents.find(c => c.name.toLowerCase() === f.compName.toLowerCase())) return toast('Component already exists', 'error');
+  state.feeComponents.push({ id: 'FC' + uid().slice(0,5), name: f.compName.trim(), amount: Number(f.compAmount) || 0 });
+  saveState(); renderAll();
+  toast('Fee component added: ' + f.compName, 'success');
+}
+function deleteFeeComponent(id) {
+  state.feeComponents = state.feeComponents.filter(c => c.id !== id);
+  saveState(); renderAll();
+}
+function renderFeeComponents() {
+  const el = document.getElementById('feeCompList'); if (!el) return;
+  if (!state.feeComponents.length) { el.innerHTML = '<p style="font-size:12px;color:var(--text-muted)">No components defined. Add them above.</p>'; return; }
+  el.innerHTML = state.feeComponents.map(c => `
+    <div style="display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px">
+      <span style="font-weight:600;font-size:13px">${escapeHtml(c.name)}</span>
+      <span style="color:#059669;font-size:12px">${fmtUGX(c.amount)}</span>
+      <button onclick="deleteFeeComponent('${c.id}')" style="background:none;border:none;cursor:pointer;color:#dc2626;font-size:14px;padding:0;margin-left:4px">&times;</button>
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   COMPETITIONS & SQUAD MANAGEMENT
+═══════════════════════════════════════════════════════════ */
+function openCompetitionForm() {
+  const athletes = state.students.filter(s => s.sport);
+  openGenericModal('Log Competition Result', `
+    <form id="compFormModal" style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><label class="form-label">Date</label><input name="date" type="date" class="form-input" value="${todayISO()}" required /></div>
+        <div><label class="form-label">Sport</label><input name="sport" type="text" list="sportList" class="form-input" placeholder="Football" required /></div>
+      </div>
+      <div><label class="form-label">Event / Tournament Name</label><input name="eventName" type="text" class="form-input" placeholder="e.g. USSSA Kampala Regional Games 2026" required /></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div><label class="form-label">Level</label>
+          <select name="level" class="form-select">
+            <option>Inter-class</option><option>Zonal</option><option>District</option>
+            <option>Regional</option><option>USSSA National</option><option>FEASSSA</option><option>Friendly</option>
+          </select>
+        </div>
+        <div><label class="form-label">Opponent / Participants</label><input name="opponent" type="text" class="form-input" placeholder="Makerere College School" /></div>
+        <div><label class="form-label">Venue</label><input name="venue" type="text" class="form-input" placeholder="Lugogo Stadium" /></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div><label class="form-label">Result</label>
+          <select name="result" class="form-select">
+            <option value="Win">Win 🏆</option><option value="Draw">Draw 🤝</option>
+            <option value="Loss">Loss</option><option value="DNS">Did Not Start</option><option value="N/A">N/A (Individual)</option>
+          </select>
+        </div>
+        <div><label class="form-label">Score (e.g. 3-1)</label><input name="score" type="text" class="form-input" placeholder="3-1 or 1st Place" /></div>
+        <div><label class="form-label">Final Position</label><input name="position" type="text" class="form-input" placeholder="1st / Runners-up" /></div>
+      </div>
+      <div><label class="form-label">Coach Match Report / Notes</label><textarea name="matchReport" rows="3" class="form-textarea" placeholder="Tactical notes, standout performers, areas to improve…"></textarea></div>
+      <div><label class="form-label">Season / Year</label><input name="season" type="text" class="form-input" placeholder="2026" value="${new Date().getFullYear()}" /></div>
+      <button type="button" class="btn btn-primary" onclick="submitCompetitionForm()">Save Result</button>
+    </form>`);
+}
+
+function submitCompetitionForm() {
+  if (!can('canManageCompetitions')) return toast('Access denied', 'error');
+  const f = document.getElementById('compFormModal');
+  if (!f) return;
+  const get = name => f.querySelector(`[name="${name}"]`)?.value || '';
+  const entry = {
+    id: 'CMP' + uid().slice(0,5), date: get('date'), sport: get('sport'),
+    eventName: get('eventName'), level: get('level'), opponent: get('opponent'),
+    venue: get('venue'), result: get('result'), score: get('score'),
+    position: get('position'), matchReport: get('matchReport'), season: get('season'),
+  };
+  if (!entry.eventName || !entry.sport) return toast('Event name and sport are required', 'error');
+  state.competitions.push(entry);
+  saveState(); renderAll();
+  closeGenericModal();
+  toast('Competition result logged', 'success');
+}
+
+function deleteCompetition(id) {
+  if (!confirm('Delete this competition record?')) return;
+  state.competitions = state.competitions.filter(c => c.id !== id);
+  saveState(); renderAll();
+  toast('Record deleted', 'success');
+}
+
+function renderCompetitionsTable() {
+  const body = document.getElementById('competitionsTableBody'); if (!body) return;
+  const sportF = (document.getElementById('compSportFilter')?.value || '').toLowerCase();
+  const seasonF = document.getElementById('compSeasonFilter')?.value || '';
+
+  // Populate filters
+  const sports = [...new Set(state.competitions.map(c => c.sport))].sort();
+  const seasons = [...new Set(state.competitions.map(c => c.season))].sort().reverse();
+  const csf = document.getElementById('compSportFilter');
+  if (csf) { const cur=csf.value; csf.innerHTML='<option value="">All Sports</option>'+sports.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join(''); csf.value=cur; }
+  const csea = document.getElementById('compSeasonFilter');
+  if (csea) { const cur=csea.value; csea.innerHTML='<option value="">All Seasons</option>'+seasons.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join(''); csea.value=cur; }
+
+  const list = [...state.competitions]
+    .filter(c => (!sportF || (c.sport||'').toLowerCase()===sportF) && (!seasonF || c.season===seasonF))
+    .sort((a,b) => b.date.localeCompare(a.date));
+
+  // Summary cards
+  const total = list.length, wins = list.filter(c=>c.result==='Win').length, draws = list.filter(c=>c.result==='Draw').length;
+  const sumEl = document.getElementById('compSummaryRow');
+  if (sumEl) {
+    sumEl.innerHTML = [
+      {l:'Total Played', v:total, cls:''},
+      {l:'Wins 🏆', v:wins, cls:'metric-card', style:'border-left-color:#059669'},
+      {l:'Draws', v:draws, cls:'', style:'border-left-color:#d97706'},
+      {l:'Losses', v:list.filter(c=>c.result==='Loss').length, cls:'', style:'border-left-color:#dc2626'},
+      {l:'Win Rate', v:total?Math.round(wins/total*100)+'%':'—', cls:''},
+    ].map(m=>`<div class="metric-card" style="${m.style||''}"><div class="metric-label">${m.l}</div><div class="metric-value">${m.v}</div></div>`).join('');
+  }
+
+  if (!list.length) { body.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--text-muted);padding:24px">No competitions logged yet.</td></tr>'; return; }
+  const resultStyle = { Win:'badge-green', Draw:'badge-amber', Loss:'badge-red', DNS:'badge-slate', 'N/A':'badge-slate' };
+  body.innerHTML = list.map(c => `<tr>
+    <td style="font-size:12px">${c.date}</td>
+    <td style="font-weight:600;max-width:180px">${escapeHtml(c.eventName)}</td>
+    <td>${escapeHtml(c.sport)}</td>
+    <td><span class="badge badge-sky" style="font-size:10px">${escapeHtml(c.level)}</span></td>
+    <td style="font-size:12px">${escapeHtml(c.opponent||'—')}</td>
+    <td style="font-size:12px">${escapeHtml(c.venue||'—')}</td>
+    <td><span class="badge ${resultStyle[c.result]||'badge-slate'}">${escapeHtml(c.result)}</span></td>
+    <td style="font-weight:700;font-family:monospace">${escapeHtml(c.score||'—')}</td>
+    <td style="font-weight:600;color:#7c3aed">${escapeHtml(c.position||'—')}</td>
+    <td style="white-space:nowrap">
+      ${c.matchReport ? `<button onclick="viewMatchReport('${c.id}')" class="btn btn-ghost btn-sm">📋 Report</button>` : ''}
+      ${can('canManageCompetitions') ? `<button onclick="deleteCompetition('${c.id}')" class="btn btn-danger btn-sm">×</button>` : ''}
+    </td>
+  </tr>`).join('');
+}
+
+function viewMatchReport(id) {
+  const c = state.competitions.find(x => x.id === id); if (!c) return;
+  openGenericModal(`${c.eventName} — Match Report`, `
+    <div style="background:var(--surface);border-radius:8px;padding:12px;font-size:13px;margin-bottom:12px">
+      <div><strong>Date:</strong> ${c.date} · <strong>Venue:</strong> ${escapeHtml(c.venue||'—')}</div>
+      <div><strong>Opponent:</strong> ${escapeHtml(c.opponent||'—')} · <strong>Score:</strong> ${escapeHtml(c.score||'—')}</div>
+      <div><strong>Result:</strong> ${escapeHtml(c.result)} · <strong>Position:</strong> ${escapeHtml(c.position||'—')}</div>
+    </div>
+    <p style="font-size:13px;line-height:1.6;white-space:pre-wrap">${escapeHtml(c.matchReport)}</p>`);
+}
+
+/* ─── Squad Management ─────────────────────────────────── */
+function openSquadForm() {
+  const athletes = state.students.filter(s => s.sport);
+  openGenericModal('Create / Edit Squad', `
+    <form id="squadFormModal" style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><label class="form-label">Squad Name</label><input name="name" type="text" class="form-input" placeholder="e.g. First XI Football" required /></div>
+        <div><label class="form-label">Sport</label><input name="sport" type="text" list="sportList" class="form-input" placeholder="Football" required /></div>
+      </div>
+      <div><label class="form-label">Select Members</label>
+        <div style="border:1px solid var(--border);border-radius:8px;max-height:220px;overflow-y:auto;padding:8px">
+          ${athletes.length ? athletes.map(s => `
+            <label style="display:flex;align-items:center;gap:8px;padding:4px 0;cursor:pointer;font-size:13px">
+              <input type="checkbox" name="members" value="${s.id}" style="accent-color:var(--accent)"/>
+              ${escapeHtml(s.name)} — ${escapeHtml(s.class)} · ${escapeHtml(s.sport)}
+            </label>`).join('')
+          : '<p style="color:var(--text-muted);font-size:12px">No athletes registered yet.</p>'}
+        </div>
+      </div>
+      <button type="button" class="btn btn-primary" onclick="submitSquadForm()">Save Squad</button>
+    </form>`);
+}
+
+function submitSquadForm() {
+  if (!can('canManageSquads')) return toast('Access denied', 'error');
+  const f = document.getElementById('squadFormModal'); if (!f) return;
+  const name = f.querySelector('[name="name"]').value.trim();
+  const sport = f.querySelector('[name="sport"]').value.trim();
+  const members = [...f.querySelectorAll('[name="members"]:checked')].map(cb => cb.value);
+  if (!name || !sport) return toast('Name and sport required', 'error');
+  if (!members.length) return toast('Select at least one member', 'error');
+  state.squads.push({ id: 'SQD' + uid().slice(0,5), name, sport, members, createdAt: todayISO() });
+  saveState(); renderAll();
+  closeGenericModal();
+  toast('Squad created: ' + name, 'success');
+}
+
+function deleteSquad(id) {
+  if (!confirm('Delete this squad?')) return;
+  state.squads = state.squads.filter(s => s.id !== id);
+  saveState(); renderAll();
+}
+
+function renderSquadsGrid() {
+  const grid = document.getElementById('squadsGrid'); if (!grid) return;
+  if (!state.squads.length) { grid.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;grid-column:1/-1">No squads created yet.</div>'; return; }
+  grid.innerHTML = state.squads.map(sq => {
+    const members = sq.members.map(id => state.students.find(s => s.id === id)).filter(Boolean);
+    const delBtn = can('canManageSquads') ? `<button onclick="deleteSquad('${sq.id}')" style="background:none;border:none;cursor:pointer;color:#dc2626;font-size:18px">&times;</button>` : '';
+    return `
+      <div style="border:1px solid var(--border);border-radius:10px;padding:14px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+          <div>
+            <div style="font-weight:700;font-size:14px">${escapeHtml(sq.name)}</div>
+            <div style="font-size:11px;color:var(--text-muted)">${escapeHtml(sq.sport)} · ${members.length} members · ${sq.createdAt}</div>
+          </div>${delBtn}
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">
+          ${members.map(s => `<span class="badge badge-sky" style="font-size:10px">${escapeHtml(s.name)}</span>`).join('')}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ─── Athlete Profiles ─────────────────────────────────── */
+function openAthleteProfileEdit(studentId) {
+  const s = state.students.find(x => x.id === studentId); if (!s) return;
+  const p = s.athleteProfile || {};
+  openGenericModal(`${s.name} — Athlete Profile`, `
+    <form id="profileFormModal" style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div><label class="form-label">Position / Event</label><input name="position" class="form-input" value="${escapeHtml(p.position||'')}" placeholder="e.g. Striker, 100m" /></div>
+        <div><label class="form-label">Height (cm)</label><input name="height" type="number" class="form-input" value="${p.height||''}" placeholder="170" /></div>
+        <div><label class="form-label">Weight (kg)</label><input name="weight" type="number" class="form-input" value="${p.weight||''}" placeholder="65" /></div>
+      </div>
+      <div><label class="form-label">Personal Best / Best Time</label><input name="personalBest" class="form-input" value="${escapeHtml(p.personalBest||'')}" placeholder="e.g. 11.2s (100m) or 3 goals in one game" /></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><label class="form-label">Injury Status</label>
+          <select name="injuryStatus" class="form-select">
+            <option value="Fit" ${(p.injuryStatus||'Fit')==='Fit'?'selected':''}>✅ Fit</option>
+            <option value="Minor Knock" ${p.injuryStatus==='Minor Knock'?'selected':''}>🟡 Minor Knock</option>
+            <option value="Injured" ${p.injuryStatus==='Injured'?'selected':''}>🔴 Injured</option>
+            <option value="Recovering" ${p.injuryStatus==='Recovering'?'selected':''}>🟠 Recovering</option>
+          </select>
+        </div>
+        <div><label class="form-label">Injury Detail</label><input name="injuryDetail" class="form-input" value="${escapeHtml(p.injuryDetail||'')}" placeholder="e.g. Left ankle sprain" /></div>
+      </div>
+      <button type="button" class="btn btn-primary" onclick="saveAthleteProfile('${studentId}')">Save Profile</button>
+    </form>`);
+}
+
+function saveAthleteProfile(studentId) {
+  const s = state.students.find(x => x.id === studentId); if (!s) return;
+  const f = document.getElementById('profileFormModal'); if (!f) return;
+  const get = name => f.querySelector(`[name="${name}"]`)?.value || '';
+  s.athleteProfile = { position: get('position'), height: get('height'), weight: get('weight'), personalBest: get('personalBest'), injuryStatus: get('injuryStatus'), injuryDetail: get('injuryDetail') };
+  saveState(); renderAll();
+  closeGenericModal();
+  toast('Athlete profile saved for ' + s.name, 'success');
+}
+
+function renderAthleteProfiles() {
+  const body = document.getElementById('athleteProfilesBody'); if (!body) return;
+  const filter = (document.getElementById('athleteProfileFilter')?.value || '').toLowerCase();
+  // populate filter
+  const apf = document.getElementById('athleteProfileFilter');
+  if (apf) {
+    const sports = [...new Set(state.students.filter(s=>s.sport).map(s=>s.sport))].sort();
+    const cur = apf.value;
+    apf.innerHTML = '<option value="">All Sports</option>' + sports.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+    apf.value = cur;
+  }
+  const athletes = state.students.filter(s => s.sport && (!filter || (s.sport||'').toLowerCase()===filter));
+  if (!athletes.length) { body.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:24px">No athletes found.</td></tr>'; return; }
+  const injuryColor = { Fit:'badge-green', 'Minor Knock':'badge-amber', Injured:'badge-red', Recovering:'badge-amber' };
+  body.innerHTML = athletes.map(s => {
+    const p = s.athleteProfile || {};
+    const inj = p.injuryStatus || 'Fit';
+    return `<tr>
+      <td style="font-weight:600">${escapeHtml(s.name)}</td>
+      <td>${escapeHtml(s.class)}</td>
+      <td>${escapeHtml(s.sport)}</td>
+      <td>${escapeHtml(p.position||'—')}</td>
+      <td>${p.height ? p.height+'cm' : '—'}</td>
+      <td>${p.weight ? p.weight+'kg' : '—'}</td>
+      <td style="font-size:12px;color:#7c3aed;font-weight:600">${escapeHtml(p.personalBest||'—')}</td>
+      <td><span class="badge ${injuryColor[inj]||'badge-slate'}">${escapeHtml(inj)}</span>${p.injuryDetail?`<br><span style="font-size:10px;color:var(--text-muted)">${escapeHtml(p.injuryDetail)}</span>`:''}</td>
+      <td><button onclick="openAthleteProfileEdit('${s.id}')" class="btn btn-ghost btn-sm">Edit</button></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NOTICE BOARD
+═══════════════════════════════════════════════════════════ */
+function postNotice(f) {
+  if (!can('canPostNotice')) return toast('Access denied', 'error');
+  if (!f.title.trim()) return toast('Title required', 'error');
+  state.notices.unshift({ id: 'NTC' + uid().slice(0,5), title: f.title.trim(), body: (f.body||'').trim(), category: f.category, postedBy: currentSession.displayName, postedAt: new Date().toISOString() });
+  if (state.notices.length > 50) state.notices = state.notices.slice(0, 50);
+  saveState(); renderAll();
+  toast('Notice posted', 'success');
+}
+function deleteNotice(id) {
+  if (!confirm('Delete this notice?')) return;
+  state.notices = state.notices.filter(n => n.id !== id);
+  saveState(); renderAll();
+}
+function renderNotices() {
+  const grid = document.getElementById('noticesGrid'); if (!grid) return;
+  const postBtn = document.getElementById('noticeBoardPostBtn');
+  const formCard = document.getElementById('noticeFormCard');
+  if (postBtn) {
+    if (can('canPostNotice')) {
+      postBtn.innerHTML = `<button class="btn btn-primary btn-sm" onclick="document.getElementById('noticeFormCard').style.display=document.getElementById('noticeFormCard').style.display==='none'?'block':'none'">+ Post Notice</button>`;
+      if (formCard) formCard.style.display = '';
+    } else {
+      postBtn.innerHTML = '';
+      if (formCard) formCard.style.display = 'none';
+    }
+  }
+  if (!state.notices.length) { grid.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px">No notices posted yet.</div>'; return; }
+  const catColor = { General:'badge-slate', Academic:'badge-sky', Finance:'badge-green', Sports:'badge-purple', Discipline:'badge-amber', 'Urgent':'badge-red' };
+  grid.innerHTML = state.notices.map(n => `
+    <div style="border:1px solid var(--border);border-radius:10px;padding:14px;border-left:3px solid ${n.category==='Urgent'?'#dc2626':n.category==='Sports'?'#7c3aed':n.category==='Finance'?'#059669':'#94a3b8'}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span class="badge ${catColor[n.category]||'badge-slate'}" style="font-size:10px">${escapeHtml(n.category)}</span>
+            <span style="font-size:11px;color:var(--text-muted)">${n.postedAt ? new Date(n.postedAt).toLocaleDateString('en-UG',{day:'numeric',month:'short',year:'numeric'}) : ''}</span>
+          </div>
+          <div style="font-weight:700;font-size:14px;margin-bottom:4px">${escapeHtml(n.title)}</div>
+          ${n.body ? `<div style="font-size:13px;color:var(--text-muted);line-height:1.5;white-space:pre-wrap">${escapeHtml(n.body)}</div>` : ''}
+          <div style="font-size:10px;color:var(--text-muted);margin-top:6px">Posted by: ${escapeHtml(n.postedBy)}</div>
+        </div>
+        ${can('canPostNotice') ? `<button onclick="deleteNotice('${n.id}')" style="background:none;border:none;cursor:pointer;color:#dc2626;font-size:20px;line-height:1;flex-shrink:0">&times;</button>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ENHANCED STATISTICAL REPORTS (Gender, Boarding, SEN, EMIS)
+═══════════════════════════════════════════════════════════ */
+function renderGenderBoardingSenStats() {
+  const s = state.students;
+
+  // Gender
+  const gEl = document.getElementById('genderStats'); if (gEl) {
+    const male = s.filter(x=>x.gender==='Male').length;
+    const female = s.filter(x=>x.gender==='Female').length;
+    const unknown = s.length - male - female;
+    const total = Math.max(1, s.length);
+    gEl.innerHTML = [['Male ♂', male, '#3b82f6'], ['Female ♀', female, '#ec4899'], ['Not Set', unknown, '#94a3b8']].map(([l,n,col]) => `
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+          <span style="font-weight:600;color:${col}">${l}</span><span>${n} (${Math.round(n/total*100)}%)</span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" style="background:${col};width:${Math.round(n/total*100)}%"></div></div>
+      </div>`).join('');
+  }
+
+  // Boarding
+  const bEl = document.getElementById('boardingStats'); if (bEl) {
+    const day = s.filter(x=>(x.boardingStatus||'Day')==='Day').length;
+    const boarding = s.filter(x=>x.boardingStatus==='Boarding').length;
+    const weekly = s.filter(x=>x.boardingStatus==='Weekly').length;
+    const total = Math.max(1, s.length);
+    bEl.innerHTML = [['Day Scholar', day, '#059669'], ['Boarding', boarding, '#7c3aed'], ['Weekly Boarder', weekly, '#0ea5e9']].map(([l,n,col]) => `
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+          <span style="font-weight:600;color:${col}">${l}</span><span>${n} (${Math.round(n/total*100)}%)</span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" style="background:${col};width:${Math.round(n/total*100)}%"></div></div>
+      </div>`).join('');
+  }
+
+  // SEN
+  const senEl = document.getElementById('senStats'); if (senEl) {
+    const withSEN = s.filter(x=>x.senFlag);
+    if (!withSEN.length) { senEl.innerHTML = '<p style="font-size:12px;color:var(--text-muted)">No SEN learners recorded.</p>'; }
+    else {
+      const types = {};
+      withSEN.forEach(x => { types[x.senFlag] = (types[x.senFlag]||0)+1; });
+      senEl.innerHTML = `<div style="font-size:13px;font-weight:700;margin-bottom:8px">${withSEN.length} SEN learner${withSEN.length>1?'s':''}</div>` +
+        Object.entries(types).map(([t,n]) => `<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)"><span>${escapeHtml(t)}</span><span style="font-weight:700">${n}</span></div>`).join('');
+    }
+  }
+}
+
+function exportEMIS() {
+  const ct = getCurrentTerm();
+  const termLabel = ct ? `${ct.year}_${ct.term.replace(' ','_')}` : 'Term_Unknown';
+  const levels = ['Pre-Primary','Primary','O Level','A Level','Other'];
+  const rows = [
+    ['EMIS Report — Kampala School & Academy'],
+    [`Term: ${ct ? ct.year+' '+ct.term : 'Not set'} | Generated: ${todayISO()}`],
+    [],
+    ['Level','Total Enrolment','Male','Female','Boarding','Day','Weekly','SEN','Cleared Fees','Outstanding (UGX)'],
+  ];
+  levels.forEach(lvl => {
+    const list = state.students.filter(s => s.level === lvl);
+    rows.push([
+      lvl, list.length,
+      list.filter(s=>s.gender==='Male').length,
+      list.filter(s=>s.gender==='Female').length,
+      list.filter(s=>s.boardingStatus==='Boarding').length,
+      list.filter(s=>(s.boardingStatus||'Day')==='Day').length,
+      list.filter(s=>s.boardingStatus==='Weekly').length,
+      list.filter(s=>s.senFlag).length,
+      list.filter(s=>s.paid>=effectiveFee(s)).length,
+      list.reduce((a,s)=>a+Math.max(0,effectiveFee(s)-s.paid),0),
+    ]);
+  });
+  // Totals row
+  const all = state.students;
+  rows.push(['TOTAL', all.length,
+    all.filter(s=>s.gender==='Male').length,
+    all.filter(s=>s.gender==='Female').length,
+    all.filter(s=>s.boardingStatus==='Boarding').length,
+    all.filter(s=>(s.boardingStatus||'Day')==='Day').length,
+    all.filter(s=>s.boardingStatus==='Weekly').length,
+    all.filter(s=>s.senFlag).length,
+    all.filter(s=>s.paid>=effectiveFee(s)).length,
+    all.reduce((a,s)=>a+Math.max(0,effectiveFee(s)-s.paid),0),
+  ]);
+  rows.push([]);
+  rows.push(['SPORTS PARTICIPATION']);
+  rows.push(['Sport','Total Athletes','Male','Female']);
+  const sportCounts = {};
+  all.filter(s=>s.sport).forEach(s=>{ if(!sportCounts[s.sport]) sportCounts[s.sport]={total:0,m:0,f:0}; sportCounts[s.sport].total++; if(s.gender==='Male') sportCounts[s.sport].m++; if(s.gender==='Female') sportCounts[s.sport].f++; });
+  Object.entries(sportCounts).forEach(([sp,c]) => rows.push([sp, c.total, c.m, c.f]));
+
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `EMIS_Report_${termLabel}.csv`;
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('EMIS CSV exported', 'success');
+}
+
+function renderEMISPreview() {
+  const el = document.getElementById('emisPreview'); if (!el) return;
+  const card = document.getElementById('emisCard'); if (!card) return;
+  card.style.display = can('canViewEMIS') ? '' : 'none';
+  if (!can('canViewEMIS')) return;
+  const levels = ['Pre-Primary','Primary','O Level','A Level','Other'];
+  const ct = getCurrentTerm();
+  el.innerHTML = `
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Term: <strong>${ct ? ct.year+' '+ct.term : 'Not set — go to Administration → Term Management'}</strong></p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Level</th><th>Total</th><th>Male</th><th>Female</th><th>Boarding</th><th>Day</th><th>SEN</th><th>Cleared</th></tr></thead>
+        <tbody>
+          ${levels.map(lvl => {
+            const list = state.students.filter(s => s.level === lvl);
+            return `<tr>
+              <td style="font-weight:600">${lvl}</td>
+              <td style="text-align:center">${list.length}</td>
+              <td style="text-align:center;color:#3b82f6">${list.filter(s=>s.gender==='Male').length}</td>
+              <td style="text-align:center;color:#ec4899">${list.filter(s=>s.gender==='Female').length}</td>
+              <td style="text-align:center">${list.filter(s=>s.boardingStatus==='Boarding').length}</td>
+              <td style="text-align:center">${list.filter(s=>(s.boardingStatus||'Day')==='Day').length}</td>
+              <td style="text-align:center;color:#7c3aed">${list.filter(s=>s.senFlag).length}</td>
+              <td style="text-align:center;color:#059669">${list.filter(s=>s.paid>=effectiveFee(s)).length}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function buildNav(tabs) {
+  const labels = {
+    overview: 'Dashboard', directory: 'Students', academics: 'Academics',
+    payments: 'Payments', sports: 'Sports & Programs', attendance: 'Attendance',
+    competitions: '🏆 Competitions', bursary: 'Bursaries', conduct: 'Conduct',
+    reports: 'Reports', admin: 'Administration', noticeboard: '📌 Notice Board',
+  };
+  const nav = document.getElementById('navBar');
+  nav.innerHTML = tabs.map(tab =>
+    `<button class="tab-btn" data-tab="${tab}">${labels[tab]||tab}</button>`
+  ).join('');
+  nav.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+}
+
+function switchTab(tab) {
+  if (!hasTab(tab)) { toast('Access denied for this tab', 'error'); return; }
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('panel-' + tab);
+  if (panel) panel.classList.add('active');
+}
+
+function setupBindings() {
+  // Register Student
+  document.getElementById('registerForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    registerStudent({ admissionNo: fd.get('admissionNo'), name: fd.get('name'), class: fd.get('class'), combination: fd.get('combination'), guardian: fd.get('guardian'), fee: fd.get('fee'), sport: fd.get('sport'), skillLevel: fd.get('skillLevel'), gender: fd.get('gender'), boardingStatus: fd.get('boardingStatus'), unebIndexNo: fd.get('unebIndexNo'), senFlag: fd.get('senFlag') });
+    e.target.reset();
+  });
+
+  // Payment
+  document.getElementById('paymentForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    recordPayment(fd.get('studentId'), fd.get('amount'));
+    e.target.reset();
+    document.getElementById('balancePreview').style.display = 'none';
+  });
+
+  // Program
+  document.getElementById('programForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    addProgram({ name: fd.get('name'), sport: fd.get('sport'), coach: fd.get('coach'), days: fd.getAll('days'), requirements: fd.get('requirements') });
+    e.target.reset();
+  });
+
+  // Performance
+  document.getElementById('performanceForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    logPerformance(fd.get('studentId'), fd.get('skillLevel'), fd.get('note'));
+    e.target.reset();
+  });
+
+  // Academic
+  document.getElementById('academicForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    addAcademicScore({ studentId: fd.get('studentId'), term: fd.get('term'), subject: fd.get('subject'), score: fd.get('score') });
+    e.target.reset();
+  });
+
+  // Conduct
+  document.getElementById('conductForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    addConduct({ studentId: fd.get('studentId'), type: fd.get('type'), severity: fd.get('severity'), reportedBy: fd.get('reportedBy'), description: fd.get('description'), notifyGuardian: fd.get('notifyGuardian') === 'on' });
+    e.target.reset();
+  });
+
+  // Filters
+  document.getElementById('conductFilter').addEventListener('change', renderConductTable);
+  document.getElementById('searchInput').addEventListener('input', renderStudentTable);
+  document.getElementById('levelFilter').addEventListener('change', renderStudentTable);
+  document.getElementById('sportFilter').addEventListener('change', renderPerformanceTable);
+  document.getElementById('academicLevelFilter').addEventListener('change', renderAcademicTable);
+
+  // Bulk SMS
+  document.getElementById('bulkSmsBtn').addEventListener('click', openBulkSms);
+
+  // Attendance
+  document.getElementById('attendanceProgram').addEventListener('change', renderAttendanceRoster);
+  document.getElementById('attendanceDate').addEventListener('change', renderAttendanceRoster);
+  document.getElementById('saveAttendanceBtn').addEventListener('click', () => {
+    const programId = document.getElementById('attendanceProgram').value;
+    const date = document.getElementById('attendanceDate').value || todayISO();
+    if (!programId) return toast('Choose a program first', 'error');
+    const checkboxes = document.querySelectorAll('#attendanceRoster .att-toggle');
+    if (!checkboxes.length) return toast('No athletes to mark', 'error');
+    const records = Array.from(checkboxes).map(cb => ({ studentId: cb.dataset.student, present: cb.checked }));
+    saveAttendance(programId, date, records);
+  });
+
+  // Term Management
+  const tf = document.getElementById('termForm');
+  if (tf) tf.addEventListener('submit', e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    addTerm({ year: fd.get('year'), term: fd.get('term'), startDate: fd.get('startDate'), endDate: fd.get('endDate') });
+    e.target.reset();
+  });
+
+  // Fee Components
+  const fcf = document.getElementById('feeCompForm');
+  if (fcf) fcf.addEventListener('submit', e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    addFeeComponent({ compName: fd.get('compName'), compAmount: fd.get('compAmount') });
+    e.target.reset();
+  });
+
+  // Notice form
+  const nf = document.getElementById('noticeForm');
+  if (nf) nf.addEventListener('submit', e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    postNotice({ title: fd.get('title'), body: fd.get('body'), category: fd.get('category') });
+    e.target.reset();
+  });
+
+  // Competition filters
+  const csf = document.getElementById('compSportFilter');
+  if (csf) csf.addEventListener('change', renderCompetitionsTable);
+  const cseaf = document.getElementById('compSeasonFilter');
+  if (cseaf) cseaf.addEventListener('change', renderCompetitionsTable);
+
+  // Athlete profile filter
+  const apf = document.getElementById('athleteProfileFilter');
+  if (apf) apf.addEventListener('change', renderAthleteProfiles);
+
+  // Balance preview
+  document.getElementById('studentSelect').addEventListener('change', updateBalancePreview);
+
+  // Export / Import
+  document.getElementById('exportBtn').addEventListener('click', exportLedger);
+  document.getElementById('adminExportBtn').addEventListener('click', exportLedger);
+  document.getElementById('importInput').addEventListener('change', e => {
+    if (e.target.files[0]) importLedger(e.target.files[0]);
+    e.target.value = '';
+  });
+  document.getElementById('adminImportInput').addEventListener('change', e => {
+    if (e.target.files[0]) importLedger(e.target.files[0]);
+    e.target.value = '';
+  });
+
+  // Reset
+  document.getElementById('resetBtn').addEventListener('click', resetAll);
+
+  // Modal close on backdrop
+  document.getElementById('genericModal').addEventListener('click', e => {
+    if (e.target.id === 'genericModal') closeGenericModal();
+  });
+
+  // Date default
+  document.getElementById('attendanceDate').value = todayISO();
+
+  // Class → combination hint
+  const classSelect = document.getElementById('classSelect');
+  const combo = document.getElementById('combinationInput');
+  if (classSelect && combo) {
+    classSelect.addEventListener('change', () => {
+      const lvl = classifyLevel(classSelect.value);
+      const hints = {
+        'Primary': 'Math, English, Science, SST, Religious Education',
+        'O Level': 'Math, English, Physics, Chemistry, Biology, Geography, History, CRE',
+        'A Level': 'PCM  or  Math, Physics, Chemistry, Sub-Math, General Paper',
+      };
+      combo.placeholder = hints[lvl] || 'Subjects comma-separated';
+    });
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SESSION EXPIRY TIMER
+═══════════════════════════════════════════════════════════ */
+let sessionBarInterval = null;
+const SESSION_WARN_SECS = 15 * 60; // show bar when < 15 min left
+
+function updateSessionBar() {
+  const secs = AUTH.sessionSecondsLeft();
+  const bar = document.getElementById('sessionBar');
+  const fill = document.getElementById('sessionBarFill');
+  const text = document.getElementById('sessionBarText');
+  if (!bar) return;
+
+  if (secs <= 0) {
+    // Session expired
+    clearInterval(sessionBarInterval);
+    bar.classList.remove('visible');
+    toast('Session expired. Please sign in again.', 'warn');
+    setTimeout(() => { AUTH.logout(); currentSession = null; location.reload(); }, 2000);
+    return;
+  }
+
+  if (secs <= SESSION_WARN_SECS) {
+    bar.classList.add('visible');
+    const mins = Math.floor(secs / 60), s = secs % 60;
+    text.textContent = `Session expires in ${mins}m ${s < 10 ? '0'+s : s}s`;
+    const pct = Math.round((secs / SESSION_WARN_SECS) * 100);
+    fill.style.width = pct + '%';
+    fill.className = 'bar-fill' + (secs < 300 ? ' danger' : secs < 600 ? ' warn' : '');
+  } else {
+    bar.classList.remove('visible');
+  }
+}
+
+function startSessionTimer() {
+  if (sessionBarInterval) clearInterval(sessionBarInterval);
+  sessionBarInterval = setInterval(() => {
+    updateSessionBar();
+    // Refresh session on any user activity (event-driven below)
+  }, 1000);
+}
+
+// Refresh session on user activity
+['click','keydown','mousemove','touchstart'].forEach(evt => {
+  document.addEventListener(evt, () => { if (AUTH.getSession()) AUTH.refreshSession(); }, { passive: true });
+});
+
+/* ═══════════════════════════════════════════════════════════
+   PASSWORD STRENGTH
+═══════════════════════════════════════════════════════════ */
+function checkPwdStrength(pwd) {
+  const bar = document.getElementById('pwdStrengthBar');
+  const lbl = document.getElementById('pwdStrengthLabel');
+  if (!bar || !lbl) return;
+  let score = 0;
+  if (pwd.length >= 8) score++;
+  if (pwd.length >= 12) score++;
+  if (/[A-Z]/.test(pwd)) score++;
+  if (/[0-9]/.test(pwd)) score++;
+  if (/[^A-Za-z0-9]/.test(pwd)) score++;
+  const levels = [
+    { label: '', color: 'transparent', w: '0%' },
+    { label: 'Very Weak', color: '#ef4444', w: '20%' },
+    { label: 'Weak', color: '#f97316', w: '40%' },
+    { label: 'Fair', color: '#f59e0b', w: '60%' },
+    { label: 'Strong', color: '#22c55e', w: '80%' },
+    { label: 'Very Strong', color: '#059669', w: '100%' },
+  ];
+  const lvl = levels[Math.min(score, 5)];
+  bar.style.width = lvl.w;
+  bar.style.background = lvl.color;
+  lbl.textContent = lvl.label;
+  lbl.style.color = lvl.color;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   USER MANAGEMENT CRUD (exec only)
+═══════════════════════════════════════════════════════════ */
+function renderUsersList() {
+  const el = document.getElementById('usersList'); if (!el) return;
+  const users = AUTH.getUsers();
+  const roleColors = { exec:'#7c3aed', admin:'#0284c7', bursary:'#059669', coach:'#d97706' };
+  const roleLabels = { exec:'Executive', admin:'Admin', bursary:'Bursary', coach:'Coach' };
+  if (!users.length) { el.innerHTML = '<p style="font-size:13px;color:var(--text-muted)">No user accounts found.</p>'; return; }
+  el.innerHTML = users.map(u => `
+    <div class="user-card">
+      <div class="user-avatar" style="background:${roleColors[u.role]||'#64748b'}">${(u.displayName||'?').slice(0,2).toUpperCase()}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:13px">${escapeHtml(u.displayName)}</div>
+        <div style="font-size:11px;color:var(--text-muted)">@${escapeHtml(u.username)} ·
+          <span style="color:${roleColors[u.role]||'#64748b'};font-weight:700">${roleLabels[u.role]||u.role}</span>
+        </div>
+        <div style="font-size:10px;color:var(--text-muted)">Last login: ${u.lastLogin ? u.lastLogin.slice(0,16).replace('T',' ') : 'Never'}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap">
+        ${u.mustChangePassword ? '<span class="badge badge-amber" style="font-size:9px">Pwd Required</span>' : '<span class="badge badge-green" style="font-size:9px">Active</span>'}
+        <button onclick="loadUserForEdit('${u.id}')" class="btn btn-ghost btn-sm">Edit</button>
+        <button onclick="adminResetUserPwd('${u.id}','${escapeHtml(u.displayName)}')" class="btn btn-warn btn-sm">Reset Pwd</button>
+        ${u.id !== currentSession.userId ? `<button onclick="confirmDeleteUser('${u.id}','${escapeHtml(u.displayName)}')" class="btn btn-danger btn-sm">Del</button>` : '<span style="font-size:10px;color:var(--text-muted);padding:4px">(you)</span>'}
+      </div>
+    </div>`).join('');
+}
+
+function loadUserForEdit(userId) {
+  const users = AUTH.getUsers();
+  const u = users.find(x => x.id === userId); if (!u) return;
+  document.getElementById('editUserId').value = u.id;
+  document.getElementById('editUsername').value = u.username;
+  document.getElementById('editDisplayName').value = u.displayName;
+  document.getElementById('editRole').value = u.role;
+  document.getElementById('editPassword').value = '';
+  // Scroll to form
+  document.getElementById('userEditForm').closest('details').open = true;
+  document.getElementById('editUsername').focus();
+}
+
+function clearUserEditForm() {
+  document.getElementById('editUserId').value = '';
+  document.getElementById('editUsername').value = '';
+  document.getElementById('editDisplayName').value = '';
+  document.getElementById('editRole').value = 'admin';
+  document.getElementById('editPassword').value = '';
+}
+
+async function handleUserEditSubmit(e) {
+  e.preventDefault();
+  const id = document.getElementById('editUserId').value;
+  const username = document.getElementById('editUsername').value.trim();
+  const displayName = document.getElementById('editDisplayName').value.trim();
+  const role = document.getElementById('editRole').value;
+  const password = document.getElementById('editPassword').value;
+
+  if (!username || !displayName) return toast('Username and Display Name are required', 'error');
+
+  const userData = { username, displayName, role };
+  if (id) userData.id = id;
+
+  if (password) {
+    if (password.length < 8) return toast('Password must be at least 8 characters', 'error');
+    userData.passwordHash = await AUTH.hashPassword(password);
+    userData.mustChangePassword = false;
+  }
+
+  const result = await AUTH.upsertUser(userData);
+  if (!result.ok) return toast(result.error, 'error');
+
+  toast(id ? 'User updated' : 'User created', 'success');
+  clearUserEditForm();
+  renderUsersList();
+  renderAuditLog();
+}
+
+async function adminResetUserPwd(userId, displayName) {
+  const newPwd = prompt(`Set a temporary password for ${displayName}:\n(min 8 characters, user must change on next login)`);
+  if (!newPwd) return;
+  const result = await AUTH.adminResetPassword(userId, newPwd);
+  if (!result.ok) return toast(result.error, 'error');
+  toast(`Password reset for ${displayName}. They will be prompted to change it.`, 'success');
+  renderUsersList();
+  renderAuditLog();
+}
+
+function confirmDeleteUser(userId, displayName) {
+  if (!confirm(`Delete account for "${displayName}"?\nThis cannot be undone.`)) return;
+  const result = AUTH.deleteUser(userId);
+  if (!result.ok) return toast(result.error, 'error');
+  toast(`Account deleted: ${displayName}`, 'success');
+  renderUsersList();
+  renderAuditLog();
+}
+
+function renderAuditLog() {
+  const el = document.getElementById('auditLogBody'); if (!el) return;
+  const log = AUTH.getAuditLog().slice(0, 50);
+  const actionColors = {
+    LOGIN: '#059669', LOGOUT: '#64748b',
+    PASSWORD_CHANGE: '#0284c7', ADMIN_PWD_RESET: '#d97706',
+    USER_UPSERT: '#7c3aed', USER_DELETE: '#dc2626',
+  };
+  el.innerHTML = log.length ? log.map(e => `
+    <div class="audit-row">
+      <span class="audit-ts">${e.ts.slice(0,16).replace('T',' ')}</span>
+      <span class="audit-user">${escapeHtml(e.username)}</span>
+      <span class="audit-action" style="background:${(actionColors[e.action]||'#64748b')+'22'};color:${actionColors[e.action]||'#64748b'}">${escapeHtml(e.action)}</span>
+      <span style="font-size:11px;color:var(--text-muted)">${escapeHtml(e.detail)}</span>
+    </div>`).join('')
+  : '<p style="font-size:12px;color:var(--text-muted);padding:12px 0">No events logged yet.</p>';
+}
+
+/* ─── Boot ───────────────────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('loginForm').addEventListener('submit', handleLogin);
+
+  // Register Service Worker for offline support
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(() => console.log('[KSA] Service Worker registered'))
+      .catch(err => console.warn('[KSA] SW registration failed:', err));
+  }
+
+  // Check for existing valid session
+  const session = AUTH.getSession();
+  if (session) {
+    currentSession = session;
+    initApp();
+  } else {
+    document.getElementById('authScreen').style.display = 'flex';
+  }
+});
+</script>
+</body>
+</html>
