@@ -1,6 +1,5 @@
 # Kampala School & Academy Portal
 ## Deployment & Operations Guide — v1.1.0
-
 ---
 
 ## 🔐 Default Login Credentials
