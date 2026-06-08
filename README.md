@@ -232,4 +232,4 @@ In `index.html`, change `SESSION_WARN_SECS = 15 * 60` (15 minutes).
 **Version:** 1.1.0  
 **Last Updated:** June 2026  
 **License:** MIT — Free for any Ugandan school or academy  
-**Maintained by:** CuePointe
+**Maintained by:** Digital Marketing Analyst Thomas Otieno
