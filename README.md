@@ -1,235 +1,171 @@
-# Kampala School & Academy Portal
-## Deployment & Operations Guide — v1.1.0
+# School Management Portal
+### Offline-first school administration for Ugandan schools & academies — v2.0.0
+
+A complete, installable school management system that runs entirely in the
+browser and works **fully offline**. Built for the realities of Ugandan
+schools: unreliable internet, shared devices, UNEB grading, EMIS returns, and
+mobile-money fee collection. No servers, no subscriptions, no data leaving the
+device.
 
 ---
 
-## 🔐 Default Login Credentials
+## Why schools choose it
 
-> **Change all passwords immediately on first login.** Users are prompted automatically.
-
-| Role | Username | Default Password | Access Scope |
-|------|----------|-----------------|--------------|
-| Executive Director | `exec` | `Exec@2026` | Full system access — all tabs, reports, user management, audit log |
-| School Administrator | `admin` | `Admin@2026` | Students, academics, payments, conduct, administration |
-| Bursary Officer | `bursary` | `Bursary@2026` | Payments, bursaries, financial reports |
-| Head Coach | `coach` | `Coach@2026` | Sports programs, attendance, bursary view |
+- **Works without internet.** Everything is stored on the device. Load it once
+  and it keeps working during power and network outages.
+- **Uganda curriculum built in.** Automatic grading for Primary, O-Level and
+  A-Level, with both the legacy Division/D1–F9 system and the new Lower
+  Secondary competency grades (A–E) — switchable per school.
+- **Fees under control.** A true payment ledger with mobile-money / cash / bank
+  methods, references, receipts, reversible entries and an audit trail.
+- **Parent communication.** One-tap SMS and WhatsApp fee reminders and conduct
+  notices, pre-filled in the school's name.
+- **Official documents.** Printable, school-branded fee receipts and termly
+  report cards.
+- **Government reporting.** One-click EMIS enrolment CSV (gender, boarding, SEN,
+  fees) per term.
+- **White-label.** Set the school name, motto, address, contacts and grading
+  mode; they flow through the whole app, receipts and messages.
+- **Installable (PWA).** "Add to Home Screen" on any phone, tablet or laptop.
 
 ---
 
-## 📁 File Structure
+## Roles
+
+| Role | Sees | Can do |
+|------|------|--------|
+| **Executive Director** | Everything | Full access, user management, school settings, audit log, data reset |
+| **School Administrator** | Students, academics, payments, conduct, reports, admin | Register/edit students, record payments, log academics & conduct, manage terms |
+| **Bursary Officer** | Payments, bursaries, reports | Record & reverse payments, award bursaries, financial reports |
+| **Head of Sports** | Sports, attendance, competitions, bursaries | Programs, attendance, competitions, squads, athlete profiles |
+
+---
+
+## First-time setup
+
+1. **Serve the folder over HTTP/HTTPS** (see *Deployment* below). Do **not** open
+   `index.html` as a `file://` URL — the offline features need a real origin.
+2. Sign in with the credentials your supplier gave you. On first sign-in each
+   account is **forced to set a private password** — the defaults stop working
+   once changed and there is no way to skip this step.
+3. As the Executive Director, open **Administration → School profile & settings**
+   and enter your school's name, motto, address, contacts and O-Level grading
+   mode.
+4. Register students, set the current term, and take your first **Backup**.
+
+> The four seed accounts (`exec`, `admin`, `bursary`, `coach`) exist only to
+> bootstrap the first sign-in. Change every password immediately and create
+> named staff accounts under **User management**.
+
+---
+
+## Files
 
 ```
 school-portal/
-├── index.html          — Main application (single-file SPA, ~130KB)
-├── auth.js             — Role-based authentication module
-├── service-worker.js   — PWA offline cache (Cache-First strategy)
-├── manifest.json       — PWA installable app manifest
-└── README_PORTAL.md    — This file
+├── index.html          Markup only (strict Content-Security-Policy)
+├── styles.css          Institutional stylesheet (no external dependencies)
+├── app.js              Application logic
+├── auth.js             Authentication module (PBKDF2 password hashing)
+├── service-worker.js   Offline cache (network-first for app code)
+├── manifest.json       PWA manifest
+└── icons/              App icons (PNG, 192 & 512)
 ```
+
+No build step, no bundler, no CDN. Everything is self-contained and works
+offline from the first load.
 
 ---
 
-## 🚀 Deployment Options
+## Deployment
 
-### Option 1: GitHub Pages (Recommended — Free, HTTPS)
-1. Fork or push all 4 files to a GitHub repository
-2. **Settings → Pages → Source:** `Deploy from a branch` → `main` → `/root`
-3. Live at: `https://YOUR-USERNAME.github.io/school-portal/`
-4. HTTPS is automatic — service worker and PWA install will work
+### GitHub Pages (free, HTTPS)
+1. Push all files to a repository.
+2. **Settings → Pages → Source:** deploy from `main` / root.
+3. Open `https://YOUR-USER.github.io/REPO/`.
 
-### Option 2: Netlify (Drag & Drop)
-1. Zip the 4 files
-2. Drag to [netlify.com/drop](https://app.netlify.com/drop)
-3. Live instantly at a `*.netlify.app` URL
+### Netlify
+Drag the folder onto [netlify.com/drop](https://app.netlify.com/drop).
 
-### Option 3: Local Server
+### Local network (a school laptop as the "server")
 ```bash
-# Python
-python3 -m http.server 8080
-
-# Node.js
-npx serve .
-```
-Visit: `http://localhost:8080`
-
-> ⚠️ **Do NOT open `index.html` directly as a `file://` URL.** The service worker requires HTTP/HTTPS.
-
----
-
-## 🏗️ Architecture
-
-```
-┌─────────────────────────────────────────────────────┐
-│                    Browser                          │
-│                                                     │
-│  ┌──────────────┐   ┌──────────────────────────┐   │
-│  │  auth.js     │   │      index.html           │   │
-│  │              │   │                           │   │
-│  │ SHA-256 pwd  │──▶│  Role Router              │   │
-│  │ sessions     │   │  Tab Permission Gates     │   │
-│  │ audit log    │   │  Business Logic           │   │
-│  │ user CRUD    │   │  Render Engine            │   │
-│  └──────────────┘   └──────────────────────────┘   │
-│         │                       │                   │
-│         ▼                       ▼                   │
-│  ┌──────────────────────────────────────────────┐   │
-│  │           localStorage                        │   │
-│  │  ksa_session · ksa_users · ksa_audit          │   │
-│  │  kampala_school_portal_state                  │   │
-│  └──────────────────────────────────────────────┘   │
-│                       │                             │
-│                       ▼                             │
-│  ┌──────────────────────────────────────────────┐   │
-│  │         service-worker.js                     │   │
-│  │  Cache-First offline strategy                 │   │
-│  └──────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────┘
+python3 -m http.server 8080     # then open http://localhost:8080
 ```
 
 ---
 
-## 🔑 Role Permission Matrix
+## Security model — read this
 
-| Feature | Exec | Admin | Bursary | Coach |
-|---------|:----:|:-----:|:-------:|:-----:|
-| Dashboard Overview | ✅ | ✅ | — | — |
-| Student Directory | ✅ | ✅ | — | — |
-| Academic Performance | ✅ | ✅ | — | — |
-| Payment Logs | ✅ | ✅ | ✅ | — |
-| Sports & Programs | ✅ | — | — | ✅ |
-| Attendance | ✅ | — | — | ✅ |
-| Bursaries | ✅ | — | ✅ (award) | ✅ (view) |
-| Conduct Log | ✅ | ✅ | — | — |
-| Statistical Reports | ✅ | — | ✅ | — |
-| Administration | ✅ | ✅ | — | — |
-| Register Students | ✅ | ✅ | — | — |
-| Record Payments | ✅ | ✅ | ✅ | — |
-| Add Programs | ✅ | ✅ | — | ✅ |
-| Log Performance | ✅ | — | — | ✅ |
-| Mark Attendance | ✅ | — | — | ✅ |
-| Award Bursary % | ✅ | — | ✅ | — |
-| Delete Students | ✅ | ✅ | — | — |
-| Export Ledger | ✅ | ✅ | ✅ | — |
-| Import Ledger | ✅ | ✅ | — | — |
-| Reset All Data | ✅ | — | — | — |
-| User Management | ✅ | — | — | — |
-| Audit Log | ✅ | — | — | — |
+This is a **single-device, offline** application. All data lives in the
+browser's `localStorage` on the device where it is used.
+
+- Passwords are hashed with **PBKDF2-SHA-256 (120,000 iterations, per-user
+  salt)** via the Web Crypto API — never stored in plain text.
+- Sign-in is **role-based**; every action re-checks the signed-in role.
+- All output is HTML-escaped and admission numbers are validated, so student
+  data cannot inject scripts. A strict Content-Security-Policy blocks any
+  external or inline script.
+- Login, password changes, user management, **payments, reversals, bursary
+  awards and student changes** are written to an audit log (Executive only).
+
+**What this means in practice:** anyone with access to the unlocked device can,
+in principle, read the local data. Treat each device like a paper register —
+keep it password-protected at the operating-system level, and use the built-in
+**Backup** regularly. This design is deliberate: it keeps the app free, private
+and fully functional without internet. If you need real multi-device sync or
+central control, that requires a hosted backend (a future option).
 
 ---
 
-## 🔒 Security Model
+## Data & backup
 
-### Authentication
-- Passwords hashed with **SHA-256 + application salt** (`ksa_salt_2026`)
-- **8-hour session** stored in `localStorage.ksa_session`
-- Session expiry bar appears at 15-minute warning
-- All user activity refreshes session automatically
-- First-login forced password change for all default accounts
+All data lives under these `localStorage` keys:
 
-### Changing the Salt
-For production, change `'ksa_salt_2026'` in `auth.js` to a unique string before deployment.
-Then regenerate all password hashes:
-```javascript
-// In browser console after loading the app:
-await AUTH.hashPassword("YourNewPassword")
-// Copy the output hash to auth.js DEFAULT_USERS
-```
-
-### Generating New Password Hashes (Node.js)
-```javascript
-const crypto = require('crypto');
-const hash = (pwd) => crypto.createHash('sha256').update(pwd + 'ksa_salt_2026').digest('hex');
-console.log(hash("Admin@YourSchool2026"));
-```
-
-### Audit Log
-All login, logout, password change, and user management events are stored in
-`localStorage.ksa_audit` (last 500 events). Accessible to Exec role only.
-
----
-
-## 💾 Data & Backup
-
-### Storage Keys
 | Key | Contents |
 |-----|----------|
-| `kampala_school_portal_state` | All school data (students, payments, attendance, conduct, programs) |
-| `ksa_users` | Portal user accounts |
-| `ksa_session` | Current user session |
-| `ksa_audit` | System audit log |
+| `kampala_school_portal_state` | Students, payments, academics, attendance, conduct, programs, competitions, squads, notices, terms, fee components, settings |
+| `ksa_users` | Staff accounts (hashed passwords) |
+| `ksa_session` | Current sign-in session (8 hours) |
+| `ksa_audit` | Audit trail (last 500 events) |
 
-### Backup Schedule
-| Frequency | Action |
-|-----------|--------|
-| Daily (term time) | Export Ledger via header button |
-| Weekly | Save to cloud (Google Drive / Dropbox) |
-| Monthly | Archive as `ksa-ledger-YYYY-MM.json` |
-| Before any reset | Always export first |
+The app requests **persistent storage** and reminds you to back up if it has
+been more than a week. Recommended routine:
 
-### Multi-Device Sync
-1. Device A: **Export Ledger** → downloads `ksa-ledger-YYYY-MM-DD.json`
-2. Share via WhatsApp, Google Drive, email, or USB
-3. Device B: **Import Ledger** → confirm replacement
+| When | Action |
+|------|--------|
+| Daily in term time | **Backup** from the top bar |
+| Weekly | Copy the backup to Google Drive / a flash disk |
+| Before any reset or restore | Always back up first |
 
----
-
-## 🛠️ Customisation
-
-### Change School Name
-In `index.html`, find `"Kampala School & Academy"` and replace globally (3 occurrences).
-
-### Modify Grading Scales
-In `index.html`, edit the `gradeFor()` function.
-
-### Add Custom Sports
-In `index.html`, edit the `SPORT_OPTIONS` array.
-
-### Change Session Duration
-In `auth.js`, change `8 * 60 * 60 * 1000` (8 hours) to desired milliseconds.
-
-### Change Warning Threshold
-In `index.html`, change `SESSION_WARN_SECS = 15 * 60` (15 minutes).
+Move data between devices with **Backup** on one device and **Restore** on
+another.
 
 ---
 
-## 🇺🇬 Uganda Curriculum Reference
+## Uganda curriculum reference
 
 | Level | Classes | Grading |
 |-------|---------|---------|
-| Pre-Primary | Baby Class, Middle Class, Top Class | — |
+| Pre-Primary | Baby, Middle, Top Class | — |
 | Primary | P.1 – P.7 | Distinction / Credit / Pass / Fail |
-| O Level (UCE) | S.1 – S.4 | D1–F9 → Division I–IV |
-| A Level (UACE) | S.5 – S.6 | A (6pts) – F (0pts) |
+| O-Level (UCE) | S.1 – S.4 | Legacy: D1–F9 → Division I–IV · New Lower Secondary: A–E competency (school-configurable) |
+| A-Level (UACE) | S.5 – S.6 | A (6) – F (0), best 3 principal subjects |
+
+O-Level aggregates are computed **per sitting over the best 8 distinct
+subjects**, matching UNEB practice.
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| "Data disappeared" | Were you in Incognito mode? Use regular browser. |
-| SMS link not working | Ensure phone is Uganda format: `0701234567` or `+256701234567` |
-| Styles look broken | Load once with internet (Tailwind CDN). Then works offline. |
-| "Import failed" | File must be `.json`, not `.txt`. Check for corruption. |
-| Can't install as app | Must be served via HTTPS, not `file://` |
-| Session expired unexpectedly | Session is 8 hours; click "Extend" in the expiry bar |
-
----
-
-## 📋 First-Time Setup Checklist
-
-- [ ] Deploy to GitHub Pages or Netlify
-- [ ] Login as `exec` with default password, change immediately
-- [ ] Login as each other role, change passwords
-- [ ] Add sports programs (Administration tab)
-- [ ] Register initial students
-- [ ] Do a test Export Ledger
-- [ ] Bookmark the URL on all administrator devices
-- [ ] Install as PWA on mobile devices (browser → "Add to Home Screen")
+| Issue | Fix |
+|-------|-----|
+| Data "disappeared" | Were you in a private/incognito window? Use a normal window. |
+| SMS/WhatsApp link opens with no number | Guardian phone must be a Ugandan format: `0772…` or `+256772…` |
+| Can't install as an app | It must be served over HTTPS (or `localhost`), not `file://` |
+| Restore failed | The file must be a `.json` backup exported by this app |
+| Update not showing | The app is network-first; reconnect once and refresh |
 
 ---
 
-**Version:** 1.1.0  
-**Last Updated:** June 2026  
-**License:** MIT — Free for any Ugandan school or academy  
-**Maintained by:** Digital Marketing Analyst Thomas Otieno
+**Version:** 2.0.0 · **License:** MIT — free for any school.
