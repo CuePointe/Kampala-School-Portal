@@ -1,28 +1,20 @@
 {
-  "name": "Kampala School & Academy Portal",
-  "short_name": "KSA Portal",
-  "description": "Offline-first school management system for Ugandan schools and academies",
+  "name": "School Management Portal",
+  "short_name": "School Portal",
+  "description": "Offline-first, role-based school management system for Ugandan schools and academies.",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#10b981",
+  "background_color": "#0b5d3b",
+  "theme_color": "#0b5d3b",
   "orientation": "any",
-  "icons": [
-    {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%230f172a'/><text x='96' y='130' font-size='96' text-anchor='middle' fill='%2310b981' font-family='monospace' font-weight='bold'>KS</text></svg>",
-      "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%230f172a'/><text x='256' y='340' font-size='240' text-anchor='middle' fill='%2310b981' font-family='monospace' font-weight='bold'>KS</text></svg>",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
-  ],
-  "categories": ["education", "productivity", "utilities"],
   "lang": "en",
   "dir": "ltr",
+  "categories": ["education", "productivity", "business"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
   "prefer_related_applications": false
 }
